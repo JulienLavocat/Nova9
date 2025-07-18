@@ -1,0 +1,5 @@
+({
+    "mats.synty_mat_01": StandardMaterial (
+        base_color_texture: "textures/PolygonSciFiSpace_Texture_01_A.png"
+    )
+})
