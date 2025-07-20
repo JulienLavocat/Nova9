@@ -1,34 +1,58 @@
-@group(2) @binding(0) var base_texture: texture_2d<f32>;
-@group(2) @binding(1) var base_sampler: sampler;
+#import bevy_pbr::{
+    pbr_fragment::pbr_input_from_standard_material,
+    pbr_functions::alpha_discard,
+}
 
-@group(2) @binding(2) var details_texture: texture_2d<f32>;
-@group(2) @binding(3) var details_sampler: sampler;
+#ifdef PREPASS_PIPELINE
+#import bevy_pbr::{
+    prepass_io::{VertexOutput, FragmentOutput},
+    pbr_deferred_functions::deferred_output,
+}
+#else
+#import bevy_pbr::{
+    forward_io::{VertexOutput, FragmentOutput},
+    pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
+}
+#endif
 
-@group(2) @binding(4) var emissive_texture: texture_2d<f32>;
-@group(2) @binding(5) var emissive_sampler: sampler;
+@group(2) @binding(100) var base_texture: texture_2d<f32>;
+@group(2) @binding(101) var base_sampler: sampler;
 
-@group(2) @binding(6) var<uniform> details_amount: f32;
+@group(2) @binding(102) var details_texture: texture_2d<f32>;
+@group(2) @binding(103) var details_sampler: sampler;
 
-@group(2) @binding(7) var<uniform> emissive_color: vec4<f32>;
+@group(2) @binding(104) var<uniform> details_amount: f32;
 
 const WHITE: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
 
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(1) uv_emmissive: vec2<f32>,
-    @location(2) uv: vec2<f32>,
-    @location(3) uv_details: vec2<f32>,
-};
-
 @fragment
-fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
+fn fragment(in: VertexOutput, @builtin(
+front_facing) is_front: bool) -> FragmentOutput {
+
+    var pbr_input = pbr_input_from_standard_material(in, is_front);
+
     let base_sampled_color = textureSample(base_texture, base_sampler, in.uv);
-    let details_sampled_color = textureSample(details_texture, details_sampler, in.uv_details);
-    let emissive_sampled_color = textureSample(emissive_texture, emissive_sampler, in.uv_emmissive);
+    let details_sampled_color = textureSample(details_texture, details_sampler, in.uv_b);
 
     let details = mix(WHITE, details_sampled_color, details_amount);
 
-    let emissive = emissive_sampled_color * emissive_color;
+    let color = base_sampled_color * details;
 
-    return base_sampled_color * details + emissive;
+    pbr_input.material.base_color = color;
+    pbr_input.material.base_color = alpha_discard(pbr_input.material, pbr_input.material.base_color);
+
+#ifdef PREPASS_PIPELINE
+    // in deferred mode we can't modify anything after that, as lighting is run in a separate fullscreen shader.
+    let out = deferred_output(in, pbr_input);
+#else
+    var out: FragmentOutput;
+    // apply lighting
+    out.color = apply_pbr_lighting(pbr_input);
+
+    // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
+    // note this does not include fullscreen postprocessing effects like bloom.
+    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
+#endif
+
+    return out;
 }

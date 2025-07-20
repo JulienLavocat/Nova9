@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::{pbr::ExtendedMaterial, prelude::*};
 use bevy_asset_loader::prelude::*;
 
-use crate::shaders::SpaceStationMaterial;
+use crate::shaders::SpaceStationMaterialExtension;
 
 #[derive(Resource, AssetCollection, Debug)]
 pub struct ModelAssets {
@@ -17,7 +17,7 @@ pub struct MaterialAssets {
     #[asset(key = "mats.synty_mat_01")]
     pub synty_mat_01: Handle<StandardMaterial>,
     #[asset(key = "mats.spacestation")]
-    pub spacestation: Handle<SpaceStationMaterial>,
+    pub spacestation: Handle<ExtendedMaterial<StandardMaterial, SpaceStationMaterialExtension>>,
 }
 
 #[derive(Resource, AssetCollection, Debug)]

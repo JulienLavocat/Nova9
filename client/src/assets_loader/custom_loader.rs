@@ -1,8 +1,10 @@
-use bevy::{ecs::system::SystemState, platform::collections::HashMap, prelude::*};
+use bevy::{
+    ecs::system::SystemState, pbr::ExtendedMaterial, platform::collections::HashMap, prelude::*,
+};
 use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 
-use crate::shaders::SpaceStationMaterial;
+use crate::shaders::SpaceStationMaterialExtension;
 
 #[derive(Deserialize, Debug, Clone)]
 enum CustomDynamicAsset {
@@ -89,7 +91,9 @@ impl DynamicAsset for CustomDynamicAsset {
                 emissive_color,
             } => {
                 let mut system_state = SystemState::<(
-                    ResMut<Assets<SpaceStationMaterial>>,
+                    ResMut<
+                        Assets<ExtendedMaterial<StandardMaterial, SpaceStationMaterialExtension>>,
+                    >,
                     Res<AssetServer>,
                 )>::new(world);
                 let (mut materials, asset_server) = system_state.get_mut(world);
@@ -97,17 +101,29 @@ impl DynamicAsset for CustomDynamicAsset {
                 let texture = asset_server.load(base_texture);
                 let details = asset_server.load(details_texture);
                 let emissive = asset_server.load(emissive_texture);
-                let emissive_color = (*emissive_color).into();
 
-                let material = SpaceStationMaterial {
+                let base = StandardMaterial {
+                    base_color_texture: Some(texture.clone()),
+                    emissive_texture: Some(emissive.clone()),
+                    emissive: LinearRgba::new(
+                        emissive_color[0],
+                        emissive_color[1],
+                        emissive_color[2],
+                        emissive_color[3],
+                    ),
+                    ..Default::default()
+                };
+                let extension = SpaceStationMaterialExtension {
                     texture,
                     details,
-                    emissive,
-                    emissive_color,
                     details_amount: *details_amount,
                 };
 
-                Ok(DynamicAssetType::Single(materials.add(material).untyped()))
+                Ok(DynamicAssetType::Single(
+                    materials
+                        .add(ExtendedMaterial { base, extension })
+                        .untyped(),
+                ))
             }
         }
     }
