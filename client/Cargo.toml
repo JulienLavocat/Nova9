@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.98"
 bevy = "0.16"
+bevy-inspector-egui = "0.32.0"
 bevy_asset_loader = { version = "0.23.0", features = [
     "3d",
     "standard_dynamic_assets",

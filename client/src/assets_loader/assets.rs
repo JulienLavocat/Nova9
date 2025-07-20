@@ -1,29 +1,27 @@
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 
+use crate::shaders::SpaceStationMaterial;
+
 #[derive(Resource, AssetCollection, Debug)]
 pub struct ModelAssets {
-    #[asset(path = "models/SM_Ship_Bomber_01.glb")]
-    pub ship_bomber_01: Handle<Gltf>,
+    #[asset(path = "models/ships/bomber_01.glb#Scene0")]
+    pub ship_bomber_01: Handle<Scene>,
+
+    #[asset(path = "models/ships/station_01.glb#Scene0")]
+    pub ship_station_01: Handle<Scene>,
 }
 
 #[derive(Resource, AssetCollection, Debug)]
 pub struct MaterialAssets {
     #[asset(key = "mats.synty_mat_01")]
     pub synty_mat_01: Handle<StandardMaterial>,
+    #[asset(key = "mats.spacestation")]
+    pub spacestation: Handle<SpaceStationMaterial>,
 }
 
 #[derive(Resource, AssetCollection, Debug)]
 pub struct TextureAssets {
-    #[asset(path = "textures/skyboxes/01/cubemap.png")]
-    pub skybox_01: Handle<Image>,
-
-    #[asset(path = "textures/skyboxes/02/cubemap.png")]
-    pub skybox_02: Handle<Image>,
-
-    #[asset(path = "textures/skyboxes/03/cubemap.png")]
-    pub skybox_03: Handle<Image>,
-
     #[asset(path = "textures/skyboxes/04/cubemap.png")]
-    pub skybox_04: Handle<Image>,
+    pub skybox_black: Handle<Image>,
 }

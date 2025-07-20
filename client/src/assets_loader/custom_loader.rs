@@ -2,11 +2,21 @@ use bevy::{ecs::system::SystemState, platform::collections::HashMap, prelude::*}
 use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 
+use crate::shaders::SpaceStationMaterial;
+
 #[derive(Deserialize, Debug, Clone)]
 enum CustomDynamicAsset {
     StandardMaterial {
         base_color_texture: String,
         emissive_texture: Option<String>,
+        normal_texture: Option<String>,
+    },
+    SpaceStationMaterial {
+        base_texture: String,
+        details_texture: String,
+        emissive_texture: String,
+        details_amount: f32,
+        emissive_color: [f32; 4],
     },
 }
 
@@ -16,6 +26,7 @@ impl DynamicAsset for CustomDynamicAsset {
             Self::StandardMaterial {
                 base_color_texture,
                 emissive_texture,
+                normal_texture,
             } => {
                 let mut textures = Vec::new();
 
@@ -24,8 +35,24 @@ impl DynamicAsset for CustomDynamicAsset {
                 if let Some(emissive_texture) = emissive_texture {
                     textures.push(asset_server.load_untyped(emissive_texture).untyped());
                 }
+                if let Some(normal_texture) = normal_texture {
+                    textures.push(asset_server.load_untyped(normal_texture).untyped());
+                }
 
                 textures
+            }
+            Self::SpaceStationMaterial {
+                base_texture,
+                details_texture,
+                emissive_texture,
+                details_amount: _,
+                emissive_color: _,
+            } => {
+                vec![
+                    asset_server.load_untyped(base_texture).untyped(),
+                    asset_server.load_untyped(details_texture).untyped(),
+                    asset_server.load_untyped(emissive_texture).untyped(),
+                ]
             }
         }
     }
@@ -35,6 +62,7 @@ impl DynamicAsset for CustomDynamicAsset {
             Self::StandardMaterial {
                 base_color_texture,
                 emissive_texture,
+                normal_texture,
             } => {
                 let mut system_state =
                     SystemState::<(ResMut<Assets<StandardMaterial>>, Res<AssetServer>)>::new(world);
@@ -42,11 +70,41 @@ impl DynamicAsset for CustomDynamicAsset {
 
                 let base_color_texture = Some(asset_server.load(base_color_texture));
                 let emissive_texture = emissive_texture.as_ref().map(|tex| asset_server.load(tex));
+                let normal_map_texture = normal_texture.as_ref().map(|tex| asset_server.load(tex));
 
                 let material = StandardMaterial {
                     base_color_texture,
                     emissive_texture,
+                    normal_map_texture,
                     ..Default::default()
+                };
+
+                Ok(DynamicAssetType::Single(materials.add(material).untyped()))
+            }
+            Self::SpaceStationMaterial {
+                base_texture,
+                details_texture,
+                details_amount,
+                emissive_texture,
+                emissive_color,
+            } => {
+                let mut system_state = SystemState::<(
+                    ResMut<Assets<SpaceStationMaterial>>,
+                    Res<AssetServer>,
+                )>::new(world);
+                let (mut materials, asset_server) = system_state.get_mut(world);
+
+                let texture = asset_server.load(base_texture);
+                let details = asset_server.load(details_texture);
+                let emissive = asset_server.load(emissive_texture);
+                let emissive_color = (*emissive_color).into();
+
+                let material = SpaceStationMaterial {
+                    texture,
+                    details,
+                    emissive,
+                    emissive_color,
+                    details_amount: *details_amount,
                 };
 
                 Ok(DynamicAssetType::Single(materials.add(material).untyped()))

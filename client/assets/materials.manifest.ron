@@ -1,5 +1,12 @@
 ({
     "mats.synty_mat_01": StandardMaterial (
-        base_color_texture: "textures/PolygonSciFiSpace_Texture_01_A.png"
+        base_color_texture: "textures/misc/texture_01_a.png"
+    ),
+    "mats.spacestation": SpaceStationMaterial (
+        base_texture: "textures/misc/texture_01_b.png",
+        details_texture: "textures/ships/mask_station_01.png",
+        emissive_texture: "textures/misc/emissive_01.png",
+        emissive_color: (0.0, 0.8758621, 1.0, 0.0),
+        details_amount: 1.0,
     )
 })
