@@ -6,43 +6,26 @@ use bevy::{
 use bevy_flycam::FlyCam;
 
 use crate::{
-    GameState,
-    assets_loader::{ModelAssets, TextureAssets},
-    materials::GameMaterial,
+    GameState, assets_loader::TextureAssets, bindings::player_ready, spacetimedb::SpacetimeDB,
 };
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::InGame), spawn_player);
+        app.add_systems(OnEnter(GameState::InGame), (player_ready, spawn_player));
     }
+}
+
+fn player_ready(stdb: SpacetimeDB) {
+    stdb.reducers().player_ready().unwrap();
 }
 
 fn spawn_player(
     mut commands: Commands,
-    texture_assets: Res<TextureAssets>,
-    images: ResMut<Assets<Image>>,
-    model_assets: Res<ModelAssets>,
-) {
-    commands.spawn((
-        Camera3d::default(),
-        FlyCam,
-        Bloom::NATURAL,
-        create_skybox(texture_assets, images),
-    ));
-
-    commands.spawn((
-        SceneRoot(model_assets.ship_bomber_01.clone()),
-        Transform::from_xyz(0.0, 0.0, 0.0),
-        GameMaterial::Ship,
-    ));
-}
-
-pub fn create_skybox(
-    texture_assets: Res<TextureAssets>,
     mut images: ResMut<Assets<Image>>,
-) -> Skybox {
+    texture_assets: Res<TextureAssets>,
+) {
     let skybox_handle = texture_assets.skybox_black.clone();
 
     let image = images.get_mut(&skybox_handle).unwrap();
@@ -56,9 +39,15 @@ pub fn create_skybox(
         });
     }
 
-    Skybox {
-        image: skybox_handle,
-        brightness: 1000.0,
-        ..Default::default()
-    }
+    // For now, the player is just a camera. In the future he will be a 3D model that can move
+    commands.spawn((
+        Camera3d::default(),
+        FlyCam,
+        Bloom::NATURAL,
+        Skybox {
+            image: skybox_handle,
+            brightness: 1000.0,
+            ..Default::default()
+        },
+    ));
 }

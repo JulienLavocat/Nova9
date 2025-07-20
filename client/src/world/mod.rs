@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::prelude::*;
 use stations::StationsPlugin;
 
-use crate::{GameState, spacetimedb::SpacetimeDB};
+use crate::{GameState, ship::ShipsPlugin, spacetimedb::SpacetimeDB};
 
 mod stations;
 
@@ -12,6 +12,7 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(StationsPlugin)
+            .add_plugins(ShipsPlugin)
             .add_systems(OnEnter(GameState::InGame), subscribe_to_world);
     }
 }
@@ -38,5 +39,5 @@ fn subscribe_to_world(mut commands: Commands, stdb: SpacetimeDB) {
         .on_error(|_, err| {
             panic!("Failed to subscribe to world: {err}");
         })
-        .subscribe(["SELECT * FROM stations"]);
+        .subscribe_to_all_tables();
 }

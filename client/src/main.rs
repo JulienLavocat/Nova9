@@ -13,6 +13,7 @@ mod bindings;
 mod materials;
 mod player;
 mod shaders;
+mod ship;
 mod spacetimedb;
 mod world;
 
