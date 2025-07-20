@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.98"
-bevy = "0.16"
+bevy = { version = "0.16.1", features = ["dynamic_linking"] }
 bevy-inspector-egui = "0.32.0"
 bevy_asset_loader = { version = "0.23.0", features = [
     "3d",
@@ -14,12 +14,14 @@ bevy_asset_loader = { version = "0.23.0", features = [
 ] }
 bevy_common_assets = { version = "0.13.0", features = ["ron"] }
 bevy_flycam = "0.16.1"
+bevy_spacetimedb = "0.6.0"
 # Set max log levels. This helps avoid unwanted low-severity log spam, which can affect performance.
 log = { version = "0.4", features = [
     "max_level_debug",
     "release_max_level_warn",
 ] }
 serde = "1.0.219"
+spacetimedb-sdk = "1.2.0"
 tracing = { version = "0.1", features = [
     "max_level_debug",
     "release_max_level_warn",

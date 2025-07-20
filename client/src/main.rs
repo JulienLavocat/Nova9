@@ -5,18 +5,22 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use materials::MaterialsPlugin;
 use player::PlayerPlugin;
 use shaders::ShadersPlugin;
+use spacetimedb::SpacetimeDbPlugin;
 use world::WorldPlugin;
 
 mod assets_loader;
+mod bindings;
 mod materials;
 mod player;
 mod shaders;
+mod spacetimedb;
 mod world;
 
 #[derive(States, Clone, Debug, Eq, PartialEq, Hash, Default)]
 enum GameState {
     #[default]
     Loading,
+    WaitingForConnection,
     InGame,
 }
 
@@ -30,6 +34,7 @@ fn main() -> AppExit {
         .add_plugins(NoCameraPlayerPlugin)
         .add_plugins((
             AssetsLoaderPlugin,
+            SpacetimeDbPlugin,
             MaterialsPlugin,
             PlayerPlugin,
             WorldPlugin,

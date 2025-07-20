@@ -3,7 +3,7 @@ use bevy_asset_loader::prelude::*;
 
 use crate::shaders::DetailedMaterialExtension;
 
-#[derive(Resource, AssetCollection, Debug)]
+#[derive(Resource, AssetCollection, Default, Debug)]
 pub struct ModelAssets {
     #[asset(path = "models/ships/bomber_01.glb#Scene0")]
     pub ship_bomber_01: Handle<Scene>,
@@ -15,7 +15,7 @@ pub struct ModelAssets {
     pub asteroid_01: Handle<Scene>,
 }
 
-#[derive(Resource, AssetCollection, Debug)]
+#[derive(Resource, AssetCollection, Default, Debug)]
 pub struct MaterialAssets {
     #[asset(key = "mats.base_01")]
     pub base_01: Handle<StandardMaterial>,
@@ -27,7 +27,7 @@ pub struct MaterialAssets {
     pub spaceship: Handle<ExtendedMaterial<StandardMaterial, DetailedMaterialExtension>>,
 }
 
-#[derive(Resource, AssetCollection, Debug)]
+#[derive(Resource, AssetCollection, Default, Debug)]
 pub struct TextureAssets {
     #[asset(path = "textures/skyboxes/04/cubemap.png")]
     pub skybox_black: Handle<Image>,

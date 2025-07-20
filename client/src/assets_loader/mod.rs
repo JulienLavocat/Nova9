@@ -17,17 +17,22 @@ pub struct AssetsLoaderPlugin;
 impl Plugin for AssetsLoaderPlugin {
     fn build(&self, app: &mut App) {
         info!("Adding AssetsLoaderPlugin");
-        app.add_plugins(RonAssetPlugin::<CustomDynamicAssetCollection>::new(&[
-            "manifest.ron",
-        ]))
-        .add_loading_state(
-            LoadingState::new(GameState::Loading)
-                .continue_to_state(GameState::InGame)
-                .register_dynamic_asset_collection::<CustomDynamicAssetCollection>()
-                .with_dynamic_assets_file::<CustomDynamicAssetCollection>("materials.manifest.ron")
-                .load_collection::<ModelAssets>()
-                .load_collection::<TextureAssets>()
-                .load_collection::<MaterialAssets>(),
-        );
+        app.init_resource::<TextureAssets>()
+            .init_resource::<ModelAssets>()
+            .init_resource::<MaterialAssets>()
+            .add_plugins(RonAssetPlugin::<CustomDynamicAssetCollection>::new(&[
+                "manifest.ron",
+            ]))
+            .add_loading_state(
+                LoadingState::new(GameState::Loading)
+                    .continue_to_state(GameState::InGame)
+                    .register_dynamic_asset_collection::<CustomDynamicAssetCollection>()
+                    .with_dynamic_assets_file::<CustomDynamicAssetCollection>(
+                        "materials.manifest.ron",
+                    )
+                    .load_collection::<ModelAssets>()
+                    .load_collection::<TextureAssets>()
+                    .load_collection::<MaterialAssets>(),
+            );
     }
 }
