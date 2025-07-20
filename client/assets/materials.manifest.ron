@@ -1,10 +1,17 @@
 ({
-    "mats.synty_mat_01": StandardMaterial (
+    "mats.base_01": StandardMaterial (
         base_color_texture: "textures/misc/texture_01_a.png"
     ),
     "mats.spacestation": SpaceStationMaterial (
         base_texture: "textures/misc/texture_01_b.png",
         details_texture: "textures/ships/mask_station_01.png",
+        emissive_texture: "textures/misc/emissive_01.png",
+        emissive_color: (0.0, 0.8758621, 1.0, 0.0),
+        details_amount: 1.0,
+    ),
+    "mats.spaceship": SpaceStationMaterial (
+        base_texture: "textures/misc/texture_01_a.png",
+        details_texture: "textures/ships/mask_04.png",
         emissive_texture: "textures/misc/emissive_01.png",
         emissive_color: (0.0, 0.8758621, 1.0, 0.0),
         details_amount: 1.0,

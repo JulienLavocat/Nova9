@@ -16,6 +16,7 @@ pub struct AssetsLoaderPlugin;
 
 impl Plugin for AssetsLoaderPlugin {
     fn build(&self, app: &mut App) {
+        info!("Adding AssetsLoaderPlugin");
         app.add_plugins(RonAssetPlugin::<CustomDynamicAssetCollection>::new(&[
             "manifest.ron",
         ]))

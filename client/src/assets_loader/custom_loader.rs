@@ -4,7 +4,7 @@ use bevy::{
 use bevy_asset_loader::prelude::*;
 use serde::Deserialize;
 
-use crate::shaders::SpaceStationMaterialExtension;
+use crate::shaders::DetailedMaterialExtension;
 
 #[derive(Deserialize, Debug, Clone)]
 enum CustomDynamicAsset {
@@ -91,9 +91,7 @@ impl DynamicAsset for CustomDynamicAsset {
                 emissive_color,
             } => {
                 let mut system_state = SystemState::<(
-                    ResMut<
-                        Assets<ExtendedMaterial<StandardMaterial, SpaceStationMaterialExtension>>,
-                    >,
+                    ResMut<Assets<ExtendedMaterial<StandardMaterial, DetailedMaterialExtension>>>,
                     Res<AssetServer>,
                 )>::new(world);
                 let (mut materials, asset_server) = system_state.get_mut(world);
@@ -113,7 +111,7 @@ impl DynamicAsset for CustomDynamicAsset {
                     ),
                     ..Default::default()
                 };
-                let extension = SpaceStationMaterialExtension {
+                let extension = DetailedMaterialExtension {
                     texture,
                     details,
                     details_amount: *details_amount,
