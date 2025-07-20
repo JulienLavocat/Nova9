@@ -14,7 +14,7 @@ bevy_asset_loader = { version = "0.23.0", features = [
 ] }
 bevy_common_assets = { version = "0.13.0", features = ["ron"] }
 bevy_flycam = "0.16.1"
-bevy_spacetimedb = "0.6.0"
+bevy_spacetimedb = "0.6.1"
 # Set max log levels. This helps avoid unwanted low-severity log spam, which can affect performance.
 log = { version = "0.4", features = [
     "max_level_debug",

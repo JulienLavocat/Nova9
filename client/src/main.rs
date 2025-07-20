@@ -21,6 +21,7 @@ enum GameState {
     #[default]
     Loading,
     WaitingForConnection,
+    StaticDataLoading,
     InGame,
 }
 

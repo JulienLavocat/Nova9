@@ -6,13 +6,25 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+pub mod on_connected_reducer;
+pub mod on_disconnected_reducer;
+pub mod player_type;
+pub mod players_table;
+pub mod ship_type_type;
+pub mod ship_types_table;
 pub mod station_type;
 pub mod stations_table;
-pub mod tmp_reducer;
 
+pub use on_connected_reducer::{on_connected, set_flags_for_on_connected, OnConnectedCallbackId};
+pub use on_disconnected_reducer::{
+    on_disconnected, set_flags_for_on_disconnected, OnDisconnectedCallbackId,
+};
+pub use player_type::Player;
+pub use players_table::*;
+pub use ship_type_type::ShipType;
+pub use ship_types_table::*;
 pub use station_type::Station;
 pub use stations_table::*;
-pub use tmp_reducer::{set_flags_for_tmp, tmp, TmpCallbackId};
 
 #[derive(Clone, PartialEq, Debug)]
 
@@ -22,7 +34,8 @@ pub use tmp_reducer::{set_flags_for_tmp, tmp, TmpCallbackId};
 /// to indicate which reducer caused the event.
 
 pub enum Reducer {
-    Tmp,
+    OnConnected,
+    OnDisconnected,
 }
 
 impl __sdk::InModule for Reducer {
@@ -32,7 +45,8 @@ impl __sdk::InModule for Reducer {
 impl __sdk::Reducer for Reducer {
     fn reducer_name(&self) -> &'static str {
         match self {
-            Reducer::Tmp => "tmp",
+            Reducer::OnConnected => "on_connected",
+            Reducer::OnDisconnected => "on_disconnected",
         }
     }
 }
@@ -40,9 +54,17 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
     type Error = __sdk::Error;
     fn try_from(value: __ws::ReducerCallInfo<__ws::BsatnFormat>) -> __sdk::Result<Self> {
         match &value.reducer_name[..] {
-            "tmp" => {
-                Ok(__sdk::parse_reducer_args::<tmp_reducer::TmpArgs>("tmp", &value.args)?.into())
-            }
+            "on_connected" => Ok(
+                __sdk::parse_reducer_args::<on_connected_reducer::OnConnectedArgs>(
+                    "on_connected",
+                    &value.args,
+                )?
+                .into(),
+            ),
+            "on_disconnected" => Ok(__sdk::parse_reducer_args::<
+                on_disconnected_reducer::OnDisconnectedArgs,
+            >("on_disconnected", &value.args)?
+            .into()),
             unknown => {
                 Err(
                     __sdk::InternalError::unknown_name("reducer", unknown, "ReducerCallInfo")
@@ -57,6 +79,8 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct DbUpdate {
+    players: __sdk::TableUpdate<Player>,
+    ship_types: __sdk::TableUpdate<ShipType>,
     stations: __sdk::TableUpdate<Station>,
 }
 
@@ -66,6 +90,12 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_update in raw.tables {
             match &table_update.table_name[..] {
+                "players" => db_update
+                    .players
+                    .append(players_table::parse_table_update(table_update)?),
+                "ship_types" => db_update
+                    .ship_types
+                    .append(ship_types_table::parse_table_update(table_update)?),
                 "stations" => db_update
                     .stations
                     .append(stations_table::parse_table_update(table_update)?),
@@ -95,6 +125,12 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
+        diff.players = cache
+            .apply_diff_to_table::<Player>("players", &self.players)
+            .with_updates_by_pk(|row| &row.id);
+        diff.ship_types = cache
+            .apply_diff_to_table::<ShipType>("ship_types", &self.ship_types)
+            .with_updates_by_pk(|row| &row.id);
         diff.stations = cache
             .apply_diff_to_table::<Station>("stations", &self.stations)
             .with_updates_by_pk(|row| &row.id);
@@ -107,6 +143,8 @@ impl __sdk::DbUpdate for DbUpdate {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct AppliedDiff<'r> {
+    players: __sdk::TableAppliedDiff<'r, Player>,
+    ship_types: __sdk::TableAppliedDiff<'r, ShipType>,
     stations: __sdk::TableAppliedDiff<'r, Station>,
 }
 
@@ -120,6 +158,8 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         event: &EventContext,
         callbacks: &mut __sdk::DbCallbacks<RemoteModule>,
     ) {
+        callbacks.invoke_table_row_callbacks::<Player>("players", &self.players, event);
+        callbacks.invoke_table_row_callbacks::<ShipType>("ship_types", &self.ship_types, event);
         callbacks.invoke_table_row_callbacks::<Station>("stations", &self.stations, event);
     }
 }
@@ -696,6 +736,8 @@ impl __sdk::SpacetimeModule for RemoteModule {
     type SubscriptionHandle = SubscriptionHandle;
 
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
+        players_table::register_table(client_cache);
+        ship_types_table::register_table(client_cache);
         stations_table::register_table(client_cache);
     }
 }

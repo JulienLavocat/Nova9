@@ -1,10 +1,17 @@
 use spacetimedb::{reducer, ReducerContext, Table};
-use tables::{stations, Station};
+use tables::{players, ship_types, stations, Player, ShipType, Station};
 
 mod tables;
 
 #[reducer(init)]
 pub fn init(ctx: &ReducerContext) {
+    ctx.db.ship_types().insert(ShipType {
+        id: 0,
+        name: "Bomber".to_string(),
+        speed: 100.0,
+        rotation_speed: 0.5,
+    });
+
     ctx.db.stations().insert(Station {
         id: 0,
         name: "Station Alpha".to_string(),
@@ -14,5 +21,12 @@ pub fn init(ctx: &ReducerContext) {
     });
 }
 
-#[reducer]
-fn tmp(_ctx: &ReducerContext) {}
+#[reducer(client_connected)]
+fn on_connected(ctx: &ReducerContext) {
+    ctx.db.players().insert(Player { id: ctx.sender });
+}
+
+#[reducer(client_disconnected)]
+fn on_disconnected(ctx: &ReducerContext) {
+    ctx.db.players().id().delete(ctx.sender);
+}

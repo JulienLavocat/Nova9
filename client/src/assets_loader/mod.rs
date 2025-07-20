@@ -25,7 +25,7 @@ impl Plugin for AssetsLoaderPlugin {
             ]))
             .add_loading_state(
                 LoadingState::new(GameState::Loading)
-                    .continue_to_state(GameState::InGame)
+                    .continue_to_state(GameState::WaitingForConnection)
                     .register_dynamic_asset_collection::<CustomDynamicAssetCollection>()
                     .with_dynamic_assets_file::<CustomDynamicAssetCollection>(
                         "materials.manifest.ron",
