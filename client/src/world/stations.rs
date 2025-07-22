@@ -44,6 +44,7 @@ fn spawn_stations(
 
         let entity = commands
             .spawn((
+                Name::new(format!("Station {}", station.id)),
                 SceneRoot(model_assets.ship_station_01.clone()),
                 Transform::from_xyz(station.x, station.y, station.z),
                 GameMaterial::Station,
