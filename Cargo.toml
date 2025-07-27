@@ -1,6 +1,5 @@
 [workspace]
-members = [
-    "client",
-    "server",
-]
+members = ["client", "server"]
 resolver = "3"
+
+upackage.rust-version = "1.88.0"

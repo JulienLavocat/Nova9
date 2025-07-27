@@ -13,6 +13,12 @@ pub struct ShipType {
     pub name: String,
     pub speed: f32,
     pub rotation_speed: f32,
+    pub camera_offset_x: f32,
+    pub camera_offset_y: f32,
+    pub camera_offset_z: f32,
+    pub camera_rotation_x: f32,
+    pub camera_rotation_y: f32,
+    pub camera_rotation_z: f32,
 }
 
 impl __sdk::InModule for ShipType {

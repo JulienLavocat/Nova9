@@ -9,6 +9,9 @@ use crate::{
     GameState, assets_loader::TextureAssets, bindings::player_ready, spacetimedb::SpacetimeDB,
 };
 
+#[derive(Component)]
+pub struct PlayerCamera;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -41,8 +44,10 @@ fn spawn_player(
 
     // For now, the player is just a camera. In the future he will be a 3D model that can move
     commands.spawn((
-        Camera3d::default(),
+        PlayerCamera,
+        Name::new("Player Camera"),
         FlyCam,
+        Camera3d::default(),
         Bloom::NATURAL,
         Skybox {
             image: skybox_handle,

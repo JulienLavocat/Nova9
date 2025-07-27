@@ -8,3 +8,5 @@ server:
 
 bindings:
     spacetime generate --out-dir client/src/bindings --lang rust -p server
+
+run: server client
