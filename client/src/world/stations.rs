@@ -1,9 +1,10 @@
 use bevy::{platform::collections::HashMap, prelude::*};
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent};
 
-use crate::{assets_loader::ModelAssets, bindings::Station, materials::GameMaterial};
+use crate::{assets_loader::ModelAssets, bindings::Station as StationRow, materials::GameMaterial};
 
-pub struct StationsPlugin;
+#[derive(Component, Debug, Clone)]
+pub struct Station;
 
 #[derive(Resource, Default, Debug, Clone)]
 struct StationsRegistry {
@@ -24,6 +25,8 @@ impl StationsRegistry {
     }
 }
 
+pub struct StationsPlugin;
+
 impl Plugin for StationsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<StationsRegistry>()
@@ -33,7 +36,7 @@ impl Plugin for StationsPlugin {
 }
 
 fn spawn_stations(
-    mut events: ReadInsertEvent<Station>,
+    mut events: ReadInsertEvent<StationRow>,
     mut commands: Commands,
     mut registry: ResMut<StationsRegistry>,
     model_assets: Res<ModelAssets>,
@@ -44,6 +47,7 @@ fn spawn_stations(
 
         let entity = commands
             .spawn((
+                Station,
                 Name::new(format!("Station {}", station.id)),
                 SceneRoot(model_assets.ship_station_01.clone()),
                 Transform::from_xyz(station.x, station.y, station.z),
@@ -57,7 +61,7 @@ fn spawn_stations(
 fn remove_stations(
     mut commands: Commands,
     mut registry: ResMut<StationsRegistry>,
-    mut events: ReadDeleteEvent<Station>,
+    mut events: ReadDeleteEvent<StationRow>,
 ) {
     for event in events.read() {
         debug!("Removing station: {:?}", event.row);

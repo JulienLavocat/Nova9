@@ -13,6 +13,14 @@ pub struct ModelAssets {
 
     #[asset(path = "models/env/astroid_01.glb#Scene0")]
     pub asteroid_01: Handle<Scene>,
+    #[asset(path = "models/env/astroid_02.glb#Scene0")]
+    pub asteroid_02: Handle<Scene>,
+    #[asset(path = "models/env/astroid_03.glb#Scene0")]
+    pub asteroid_03: Handle<Scene>,
+    #[asset(path = "models/env/astroid_04.glb#Scene0")]
+    pub asteroid_04: Handle<Scene>,
+    #[asset(path = "models/env/astroid_05.glb#Scene0")]
+    pub asteroid_05: Handle<Scene>,
 }
 
 #[derive(Resource, AssetCollection, Default, Debug)]

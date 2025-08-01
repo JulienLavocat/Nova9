@@ -10,8 +10,8 @@ use bevy_spacetimedb::{
 use crate::{
     GameState,
     bindings::{
-        DbConnection, ShipPilotsTableAccess, ShipTypesTableAccess, ShipsTableAccess,
-        StationsTableAccess,
+        AsteroidsTableAccess, DbConnection, ShipPilotsTableAccess, ShipTypesTableAccess,
+        ShipsTableAccess, StationsTableAccess,
     },
 };
 
@@ -53,7 +53,7 @@ impl Plugin for SpacetimeDbPlugin {
                     conn
                 })
                 .with_events(|plugin, app, db, _| {
-                    tables!(stations, ship_types, ships, ship_pilots);
+                    tables!(stations, ship_types, ships, ship_pilots, asteroids);
 
                     let (send, recv) = std::sync::mpsc::channel();
                     app.insert_resource(StaticDataLoadedSender(send));

@@ -49,7 +49,6 @@ fn spawn_ship(
             .spawn((
                 Name::new(format!("Ship {}", ship.id)),
                 Ship {
-                    ship_id: ship.id,
                     ship_type: ship.ship_type_id,
                 },
                 Transform::from_xyz(ship.x, ship.y, ship.z),

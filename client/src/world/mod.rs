@@ -1,17 +1,19 @@
 use std::f32::consts::PI;
 
+use asteroids::AsteroidsPlugin;
 use bevy::prelude::*;
 use stations::StationsPlugin;
 
 use crate::{GameState, spacetimedb::SpacetimeDB};
 
+mod asteroids;
 mod stations;
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(StationsPlugin)
+        app.add_plugins((StationsPlugin, AsteroidsPlugin))
             .add_systems(OnEnter(GameState::InGame), subscribe_to_world);
     }
 }

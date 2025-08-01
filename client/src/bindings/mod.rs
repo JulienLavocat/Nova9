@@ -6,6 +6,8 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+pub mod asteroid_type;
+pub mod asteroids_table;
 pub mod on_connected_reducer;
 pub mod on_disconnected_reducer;
 pub mod player_ready_reducer;
@@ -20,6 +22,8 @@ pub mod ships_table;
 pub mod station_type;
 pub mod stations_table;
 
+pub use asteroid_type::Asteroid;
+pub use asteroids_table::*;
 pub use on_connected_reducer::{on_connected, set_flags_for_on_connected, OnConnectedCallbackId};
 pub use on_disconnected_reducer::{
     on_disconnected, set_flags_for_on_disconnected, OnDisconnectedCallbackId,
@@ -98,6 +102,7 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct DbUpdate {
+    asteroids: __sdk::TableUpdate<Asteroid>,
     players: __sdk::TableUpdate<Player>,
     ship_pilots: __sdk::TableUpdate<ShipPilot>,
     ship_types: __sdk::TableUpdate<ShipType>,
@@ -111,6 +116,9 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_update in raw.tables {
             match &table_update.table_name[..] {
+                "asteroids" => db_update
+                    .asteroids
+                    .append(asteroids_table::parse_table_update(table_update)?),
                 "players" => db_update
                     .players
                     .append(players_table::parse_table_update(table_update)?),
@@ -152,6 +160,9 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
+        diff.asteroids = cache
+            .apply_diff_to_table::<Asteroid>("asteroids", &self.asteroids)
+            .with_updates_by_pk(|row| &row.id);
         diff.players = cache
             .apply_diff_to_table::<Player>("players", &self.players)
             .with_updates_by_pk(|row| &row.id);
@@ -176,6 +187,7 @@ impl __sdk::DbUpdate for DbUpdate {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct AppliedDiff<'r> {
+    asteroids: __sdk::TableAppliedDiff<'r, Asteroid>,
     players: __sdk::TableAppliedDiff<'r, Player>,
     ship_pilots: __sdk::TableAppliedDiff<'r, ShipPilot>,
     ship_types: __sdk::TableAppliedDiff<'r, ShipType>,
@@ -193,6 +205,7 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         event: &EventContext,
         callbacks: &mut __sdk::DbCallbacks<RemoteModule>,
     ) {
+        callbacks.invoke_table_row_callbacks::<Asteroid>("asteroids", &self.asteroids, event);
         callbacks.invoke_table_row_callbacks::<Player>("players", &self.players, event);
         callbacks.invoke_table_row_callbacks::<ShipPilot>("ship_pilots", &self.ship_pilots, event);
         callbacks.invoke_table_row_callbacks::<ShipType>("ship_types", &self.ship_types, event);
@@ -773,6 +786,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     type SubscriptionHandle = SubscriptionHandle;
 
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
+        asteroids_table::register_table(client_cache);
         players_table::register_table(client_cache);
         ship_pilots_table::register_table(client_cache);
         ship_types_table::register_table(client_cache);
