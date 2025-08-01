@@ -1,4 +1,8 @@
 use assets_loader::AssetsLoaderPlugin;
+use avian3d::{
+    PhysicsPlugins,
+    prelude::{Gravity, PhysicsDebugPlugin},
+};
 use bevy::prelude::*;
 use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_flycam::{MovementSettings, NoCameraPlayerPlugin};
@@ -30,12 +34,24 @@ enum GameState {
 
 fn main() -> AppExit {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Nova9".to_string(),
+                // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
+                ..default()
+            }),
+            ..default()
+        }))
         .init_state::<GameState>()
         .add_plugins(ShadersPlugin)
         .add_plugins(EguiPlugin::default())
         .add_plugins(WorldInspectorPlugin::default())
-        .add_plugins((NoCameraPlayerPlugin, EnhancedInputPlugin))
+        .add_plugins((
+            NoCameraPlayerPlugin,
+            EnhancedInputPlugin,
+            PhysicsPlugins::default(),
+            PhysicsDebugPlugin::default(),
+        ))
         .add_plugins((
             AssetsLoaderPlugin,
             SpacetimeDbPlugin,
@@ -48,5 +64,6 @@ fn main() -> AppExit {
             speed: 20.0,
             ..default()
         })
+        .insert_resource(Gravity(Vec3::ZERO))
         .run()
 }

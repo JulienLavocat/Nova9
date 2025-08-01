@@ -11,14 +11,18 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 pub struct ShipType {
     pub id: u64,
     pub name: String,
-    pub speed: f32,
-    pub rotation_speed: f32,
     pub camera_offset_x: f32,
     pub camera_offset_y: f32,
     pub camera_offset_z: f32,
-    pub camera_rotation_x: f32,
-    pub camera_rotation_y: f32,
-    pub camera_rotation_z: f32,
+    pub mass: f32,
+    pub linear_damping: f32,
+    pub angular_damping: f32,
+    pub thrust: f32,
+    pub vertical_trhust: f32,
+    pub lateral_thrust: f32,
+    pub pitch_torque: f32,
+    pub yaw_torque: f32,
+    pub roll_torque: f32,
 }
 
 impl __sdk::InModule for ShipType {

@@ -46,7 +46,6 @@ fn spawn_player(
     commands.spawn((
         PlayerCamera,
         Name::new("Player Camera"),
-        FlyCam,
         Camera3d::default(),
         Bloom::NATURAL,
         Skybox {

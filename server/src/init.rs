@@ -7,14 +7,22 @@ pub fn init(ctx: &ReducerContext) {
     ctx.db.ship_types().insert(ShipType {
         id: 0,
         name: "Bomber".to_string(),
-        speed: 100.0,
-        rotation_speed: 0.5,
+
         camera_offset_x: 0.0,
         camera_offset_y: 10.0,
-        camera_offset_z: -40.0,
-        camera_rotation_x: -180.0_f32.to_radians(),
-        camera_rotation_y: -2.0_f32.to_radians(),
-        camera_rotation_z: -180.0_f32.to_radians(),
+        camera_offset_z: 40.0,
+
+        mass: 1.0,
+        thrust: 10000.0,
+        vertical_trhust: 50.0,
+        lateral_thrust: 50.0,
+
+        linear_damping: 5.0,
+        angular_damping: 1.0,
+
+        pitch_torque: 300.0,
+        yaw_torque: 500.0,
+        roll_torque: 5000.0,
     });
 
     ctx.db.stations().insert(Station {

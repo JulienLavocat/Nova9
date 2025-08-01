@@ -1,9 +1,15 @@
+use avian3d::prelude::{
+    AngularDamping, Collider, ExternalForce, ExternalTorque, LinearDamping, Mass,
+};
 use bevy::prelude::*;
 use bevy_spacetimedb::{DeleteEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
-    assets_loader::ModelAssets, bindings::Ship as ShipTable, materials::GameMaterial,
+    assets_loader::ModelAssets,
+    bindings::{Ship as ShipTable, ShipTypesTableAccess},
+    materials::GameMaterial,
     ships::components::Ship,
+    spacetimedb::SpacetimeDB,
 };
 
 use super::resources::ShipsRegistry;
@@ -21,12 +27,19 @@ fn spawn_ship(
     mut events: ReadInsertEvent<ShipTable>,
     mut ships: ResMut<ShipsRegistry>,
     models_assets: Res<ModelAssets>,
+    stdb: SpacetimeDB,
 ) {
     for event in events.read() {
         let ship = &event.row;
 
         debug!("Spawning ship: {:?}", ship);
 
+        let ship_type = stdb
+            .db()
+            .ship_types()
+            .id()
+            .find(&ship.ship_type_id)
+            .unwrap();
         let model = match ship.ship_type_id {
             1 => &models_assets.ship_bomber_01,
             _ => panic!("Unknown ship type: {}", ship.ship_type_id),
@@ -35,10 +48,24 @@ fn spawn_ship(
         let entity = commands
             .spawn((
                 Name::new(format!("Ship {}", ship.id)),
-                Ship { ship_id: ship.id },
-                SceneRoot(model.clone()),
+                Ship {
+                    ship_id: ship.id,
+                    ship_type: ship.ship_type_id,
+                },
                 Transform::from_xyz(ship.x, ship.y, ship.z),
-                GameMaterial::Ship,
+                Visibility::Visible,
+                Mass(ship_type.mass),
+                LinearDamping(ship_type.linear_damping),
+                AngularDamping(ship_type.angular_damping),
+                ExternalTorque::default().with_persistence(false),
+                ExternalForce::default().with_persistence(false),
+                Collider::cuboid(5.0, 5.0, 5.0),
+                children![(
+                    SceneRoot(model.clone()),
+                    Transform::default()
+                        .with_rotation(Quat::from_rotation_y(-180.0_f32.to_radians())),
+                    GameMaterial::Ship
+                ),],
             ))
             .id();
 
