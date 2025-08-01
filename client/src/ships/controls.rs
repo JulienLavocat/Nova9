@@ -103,9 +103,10 @@ fn on_ship_pilot_inserted(
                     ),
                     (
                         Action::<Strafe>::new(),
+                        Negate::all(),
                         Bindings::spawn(Bidirectional {
-                            positive: Binding::from(KeyCode::KeyD),
-                            negative: Binding::from(KeyCode::KeyA),
+                            positive: Binding::from(KeyCode::KeyE),
+                            negative: Binding::from(KeyCode::KeyQ),
                         })
                     ),
                     (
@@ -117,10 +118,9 @@ fn on_ship_pilot_inserted(
                     ),
                     (
                         Action::<Roll>::new(),
-                        Negate::all(),
                         Bindings::spawn(Bidirectional {
-                            positive: Binding::from(KeyCode::KeyE),
-                            negative: Binding::from(KeyCode::KeyQ),
+                            positive: Binding::from(KeyCode::KeyA),
+                            negative: Binding::from(KeyCode::KeyD),
                         })
                     ),
                     (
