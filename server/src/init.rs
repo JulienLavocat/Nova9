@@ -8,7 +8,7 @@ use crate::tables::{asteroids, ship_types, stations, Asteroid, ShipType, Station
 pub fn init(ctx: &ReducerContext) {
     ctx.db.ship_types().insert(ShipType {
         id: 0,
-        name: "Bomber".to_string(),
+        name: "Fighter".to_string(),
 
         camera_offset_x: 0.0,
         camera_offset_y: 10.0,
@@ -16,8 +16,8 @@ pub fn init(ctx: &ReducerContext) {
 
         mass: 1.0,
         thrust: 10000.0,
-        vertical_trhust: 50.0,
-        lateral_thrust: 50.0,
+        vertical_thrust: 500.0,
+        lateral_thrust: 500.0,
 
         linear_damping: 1.0,
         angular_damping: 1.0,

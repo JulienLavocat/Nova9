@@ -17,8 +17,8 @@ use super::{components::Ship, resources::ShipsRegistry};
 #[derive(Component, Debug, Default, Reflect)]
 pub struct FlightControls {
     pub thrust: f32,
-    pub up_down: f32,
-    pub strafe: f32,
+    pub vertical_thrust: f32,
+    pub lateral_thrust: f32,
     pub roll: f32,
     pub pitch: f32,
     pub yaw: f32,
@@ -33,11 +33,11 @@ struct Thrust;
 
 #[derive(InputAction)]
 #[action_output(f32)]
-struct Strafe;
+struct LateralThrust;
 
 #[derive(InputAction)]
 #[action_output(f32)]
-struct UpDown;
+struct VerticalThrust;
 
 #[derive(InputAction)]
 #[action_output(f32)]
@@ -102,7 +102,7 @@ fn on_ship_pilot_inserted(
                     )
                     ),
                     (
-                        Action::<Strafe>::new(),
+                        Action::<LateralThrust>::new(),
                         Negate::all(),
                         Bindings::spawn(Bidirectional {
                             positive: Binding::from(KeyCode::KeyE),
@@ -110,7 +110,7 @@ fn on_ship_pilot_inserted(
                         })
                     ),
                     (
-                        Action::<UpDown>::new(),
+                        Action::<VerticalThrust>::new(),
                         Bindings::spawn(Bidirectional {
                             positive: Binding::from(KeyCode::Space),
                             negative: Binding::from(KeyCode::ControlLeft),
@@ -189,8 +189,8 @@ fn on_ship_pilot_removed(
 
 fn apply_inputs(
     thrust_action: Single<&ActionValue, With<Action<Thrust>>>,
-    strafe_action: Single<&ActionValue, With<Action<Strafe>>>,
-    up_down_action: Single<&ActionValue, With<Action<UpDown>>>,
+    lateral_thrust_action: Single<&ActionValue, With<Action<LateralThrust>>>,
+    vertical_thrust_action: Single<&ActionValue, With<Action<VerticalThrust>>>,
     roll_action: Single<&ActionValue, With<Action<Roll>>>,
     pitch_yaw_action: Single<&ActionValue, With<Action<PitchYaw>>>,
     mut flight_controls: Single<&mut FlightControls, With<ControlledShip>>,
@@ -198,8 +198,8 @@ fn apply_inputs(
     let pitch_yaw_action = pitch_yaw_action.as_axis2d();
 
     flight_controls.thrust = thrust_action.as_axis1d().clamp(-1.0, 1.0);
-    flight_controls.strafe = strafe_action.as_axis1d().clamp(-1.0, 1.0);
-    flight_controls.up_down = up_down_action.as_axis1d().clamp(-1.0, 1.0);
+    flight_controls.lateral_thrust = lateral_thrust_action.as_axis1d().clamp(-1.0, 1.0);
+    flight_controls.vertical_thrust = vertical_thrust_action.as_axis1d().clamp(-1.0, 1.0);
     flight_controls.roll = roll_action.as_axis1d().clamp(-1.0, 1.0);
     flight_controls.pitch = pitch_yaw_action.y.clamp(-1.0, 1.0);
     flight_controls.yaw = pitch_yaw_action.x.clamp(-1.0, 1.0);
@@ -243,6 +243,18 @@ fn apply_movement(
         transform.forward() * flight_controls.thrust * ship_data.thrust * time.delta_secs();
     external_force.apply_force(thrust_force);
 
+    let vertical_thrust_force = transform.up()
+        * flight_controls.vertical_thrust
+        * ship_data.vertical_thrust
+        * time.delta_secs();
+    external_force.apply_force(vertical_thrust_force);
+
+    let lateral_thrust_force = transform.right()
+        * flight_controls.lateral_thrust
+        * ship_data.lateral_thrust
+        * time.delta_secs();
+    external_force.apply_force(lateral_thrust_force);
+
     Ok(())
 }
 
@@ -262,8 +274,8 @@ fn debug_controls(
         flight_controls.into_inner();
     Window::new("Flight Controls").show(egui_context.ctx_mut()?, |ui| {
         ui.label(format!("Thrust: {}", flight_controls.thrust));
-        ui.label(format!("Strafe: {}", flight_controls.strafe));
-        ui.label(format!("Up/Down: {}", flight_controls.up_down));
+        ui.label(format!("Strafe: {}", flight_controls.lateral_thrust));
+        ui.label(format!("Up/Down: {}", flight_controls.vertical_thrust));
         ui.label(format!("Roll: {}", flight_controls.roll));
         ui.label(format!("Pitch: {}", flight_controls.pitch));
         ui.label(format!("Yaw: {}", flight_controls.yaw));

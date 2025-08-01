@@ -13,7 +13,7 @@ pub struct ShipType {
     pub linear_damping: f32,
     pub angular_damping: f32,
     pub thrust: f32,
-    pub vertical_trhust: f32,
+    pub vertical_thrust: f32,
     pub lateral_thrust: f32,
     pub pitch_torque: f32,
     pub yaw_torque: f32,
