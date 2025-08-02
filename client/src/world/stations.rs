@@ -61,6 +61,13 @@ fn spawn_stations(
                 SceneRoot(model_assets.ship_station_01.clone()),
                 Transform::from_xyz(station.x, station.y, station.z),
                 GameMaterial::Station,
+                children![
+                    SceneRoot(model_assets.ship_station_02.clone()),
+                    SceneRoot(model_assets.ship_station_03.clone()),
+                    SceneRoot(model_assets.ship_station_04.clone()),
+                    SceneRoot(model_assets.ship_station_05.clone()),
+                    SceneRoot(model_assets.ship_station_06.clone())
+                ],
             ))
             .id();
         registry.register(station.id, entity);

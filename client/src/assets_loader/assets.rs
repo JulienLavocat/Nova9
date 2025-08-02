@@ -10,6 +10,16 @@ pub struct ModelAssets {
 
     #[asset(path = "models/ships/station_01.glb#Scene0")]
     pub ship_station_01: Handle<Scene>,
+    #[asset(path = "models/ships/station_02.glb#Scene0")]
+    pub ship_station_02: Handle<Scene>,
+    #[asset(path = "models/ships/station_03.glb#Scene0")]
+    pub ship_station_03: Handle<Scene>,
+    #[asset(path = "models/ships/station_04.glb#Scene0")]
+    pub ship_station_04: Handle<Scene>,
+    #[asset(path = "models/ships/station_05.glb#Scene0")]
+    pub ship_station_05: Handle<Scene>,
+    #[asset(path = "models/ships/station_06.glb#Scene0")]
+    pub ship_station_06: Handle<Scene>,
 
     #[asset(path = "models/env/astroid_01.glb#Scene0")]
     pub asteroid_01: Handle<Scene>,

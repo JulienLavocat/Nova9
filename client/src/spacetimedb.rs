@@ -1,4 +1,4 @@
-use std::sync::mpsc::Sender;
+use std::{env, sync::mpsc::Sender};
 
 use bevy::prelude::*;
 use bevy_spacetimedb::{
@@ -30,9 +30,14 @@ impl Plugin for SpacetimeDbPlugin {
         app.add_plugins(
             StdbPlugin::default()
                 .with_connection(|send_connected, send_disconnected, send_error, _| {
+                    let uri = env::var("SPACETIMEDB_URI")
+                        .unwrap_or_else(|_| "https://maincloud.spacetimedb.com".to_string());
+                    let module_name =
+                        env::var("SPACETIME_DB_MODULE").unwrap_or_else(|_| "nova9".to_string());
+
                     let conn = DbConnection::builder()
-                        .with_uri("https://stdb.jlavocat.eu")
-                        .with_module_name("nova9")
+                        .with_uri(uri)
+                        .with_module_name(module_name)
                         .with_light_mode(true)
                         .on_connect(move |_, _, _| {
                             send_connected.send(StdbConnectedEvent {}).unwrap();

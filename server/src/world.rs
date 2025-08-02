@@ -1,6 +1,5 @@
 use std::{f32::consts::TAU, ops::Add};
 
-use log::debug;
 use spacetimedb::{reducer, table, ScheduleAt, Table};
 
 use crate::tables::{stations, Station};
@@ -39,7 +38,6 @@ pub fn world_update_stations_rotation(
         .add(update_interval)
         .as_millis();
 
-    debug!("Updating station rotations");
     for station in ctx.db.stations().iter() {
         let target_angle = (station.target_angle
             + station.rotation_speed * update_interval.as_secs_f32())
