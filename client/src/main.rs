@@ -45,12 +45,12 @@ fn main() -> AppExit {
         .init_state::<GameState>()
         .add_plugins(ShadersPlugin)
         .add_plugins(EguiPlugin::default())
-        .add_plugins(WorldInspectorPlugin::default())
+        // .add_plugins(WorldInspectorPlugin::default())
         .add_plugins((
             NoCameraPlayerPlugin,
             EnhancedInputPlugin,
             PhysicsPlugins::default(),
-            PhysicsDebugPlugin::default(),
+            // PhysicsDebugPlugin::default(),
         ))
         .add_plugins((
             AssetsLoaderPlugin,
