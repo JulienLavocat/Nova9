@@ -4,7 +4,13 @@ use spacetimedb_sdk::Identity;
 
 use crate::{bindings::ShipLocation, spacetimedb::SpacetimeDB};
 
-use super::{components::Ship, resources::ShipsRegistry};
+use super::{components::ControlledShip, resources::ShipsRegistry};
+
+#[derive(Component, Debug)]
+struct TargetShipLocation {
+    pos: Vec3,
+    rot: Quat,
+}
 
 pub struct ShipLocationUpdatesPlugin;
 
@@ -13,37 +19,42 @@ impl Plugin for ShipLocationUpdatesPlugin {
         app.add_systems(
             Update,
             (on_ship_location_inserted, on_ship_location_updated),
-        );
+        )
+        .add_systems(PostUpdate, update_target_ship_locations);
     }
 }
 
 fn on_ship_location_inserted(
     mut events: ReadInsertEvent<ShipLocation>,
     mut commands: Commands,
-    mut ship_transforms: Query<&mut Transform, With<Ship>>,
     ship_registry: Res<ShipsRegistry>,
 ) {
     for event in events.read() {
         let ship_location = &event.row;
 
-        debug!("Received ship location update: {:?}", ship_location);
-
         if let Some(ship) = ship_registry.get(ship_location.ship_id) {
-            debug!("{ship:?}");
-            if let Ok(mut transform) = ship_transforms.get_mut(ship.entity()) {
-                *transform = Transform::from_xyz(ship_location.x, ship_location.y, ship_location.z)
-                    .with_rotation(Quat::from_xyzw(
+            commands.entity(ship.entity()).insert((
+                TargetShipLocation {
+                    pos: Vec3::new(ship_location.x, ship_location.y, ship_location.z),
+                    rot: Quat::from_xyzw(
                         ship_location.rot_x,
                         ship_location.rot_y,
                         ship_location.rot_z,
                         ship_location.rot_w,
-                    ));
-            } else {
-                warn!(
-                    "Failed to update transform for ship ID {}: Entity not found",
-                    ship_location.ship_id
-                );
-            }
+                    ),
+                },
+                Transform::from_translation(Vec3::new(
+                    ship_location.x,
+                    ship_location.y,
+                    ship_location.z,
+                ))
+                .with_rotation(Quat::from_xyzw(
+                    ship_location.rot_x,
+                    ship_location.rot_y,
+                    ship_location.rot_z,
+                    ship_location.rot_w,
+                )),
+            ));
         } else {
             warn!(
                 "Ship[{}] not found in registry for location update",
@@ -60,7 +71,7 @@ fn on_ship_location_inserted(
 fn on_ship_location_updated(
     mut events: ReadUpdateEvent<ShipLocation>,
     mut commands: Commands,
-    mut ship_transforms: Query<&mut Transform, With<Ship>>,
+    mut ships: Query<&mut TargetShipLocation>,
     ship_registry: Res<ShipsRegistry>,
     stdb: SpacetimeDB,
 ) {
@@ -75,18 +86,18 @@ fn on_ship_location_updated(
                 continue;
             }
 
-            if let Ok(mut transform) = ship_transforms.get_mut(ship.entity()) {
-                *transform = Transform::from_xyz(ship_location.x, ship_location.y, ship_location.z)
-                    .with_rotation(Quat::from_xyzw(
-                        ship_location.rot_x,
-                        ship_location.rot_y,
-                        ship_location.rot_z,
-                        ship_location.rot_w,
-                    ));
+            if let Ok(mut target_location) = ships.get_mut(ship.entity()) {
+                target_location.pos = Vec3::new(ship_location.x, ship_location.y, ship_location.z);
+                target_location.rot = Quat::from_xyzw(
+                    ship_location.rot_x,
+                    ship_location.rot_y,
+                    ship_location.rot_z,
+                    ship_location.rot_w,
+                );
             } else {
                 warn!(
-                    "Failed to update transform for ship ID {}: Entity not found",
-                    ship_location.ship_id
+                    "TargetShipLocation component not found for ship[{}]",
+                    ship.entity()
                 );
             }
         } else {
@@ -100,5 +111,14 @@ fn on_ship_location_updated(
                 new: event.new.clone(),
             });
         }
+    }
+}
+
+fn update_target_ship_locations(
+    mut ships: Query<(&mut Transform, &TargetShipLocation), Without<ControlledShip>>,
+) {
+    for (mut transform, target_location) in ships.iter_mut() {
+        transform.translation = transform.translation.lerp(target_location.pos, 0.1);
+        transform.rotation = transform.rotation.slerp(target_location.rot, 0.1);
     }
 }
