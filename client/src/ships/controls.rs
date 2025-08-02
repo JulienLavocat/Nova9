@@ -7,7 +7,6 @@ use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 use crate::{
     GameState,
     bindings::{ShipPilot, ShipTypesTableAccess, ShipsTableAccess},
-    misc::follow_camera::FollowCamera,
     player::PlayerCamera,
     ships::components::ControlledShip,
     spacetimedb::SpacetimeDB,
@@ -16,7 +15,7 @@ use crate::{
 use super::{components::Ship, resources::ShipsRegistry};
 
 #[derive(Component, Debug, Default, Reflect)]
-struct FlightControls {
+pub struct FlightControls {
     pub thrust: f32,
     pub vertical_thrust: f32,
     pub lateral_thrust: f32,
@@ -26,7 +25,7 @@ struct FlightControls {
 }
 
 #[derive(Component)]
-struct OnPiloting;
+pub struct OnPiloting;
 
 #[derive(InputAction)]
 #[action_output(f32)]
@@ -87,51 +86,49 @@ fn on_ship_pilot_inserted(
         if let Some(ship_entity) = ships.get(ship.ship_id) {
             debug!("Assigning pilot to ship: {:?}", ship);
 
-            let actions = actions!(
-                OnPiloting[
-                (
-                    Action::<Thrust>::new(),
-                    Bindings::spawn(Bidirectional {
-                        positive: Binding::from(KeyCode::KeyW),
-                        negative: Binding::from(KeyCode::KeyS),
-                    }
-                )
-                ),
-                (
-                    Action::<LateralThrust>::new(),
-                    Negate::all(),
-                    Bindings::spawn(Bidirectional {
-                        positive: Binding::from(KeyCode::KeyE),
-                        negative: Binding::from(KeyCode::KeyQ),
-                    })
-                ),
-                (
-                    Action::<VerticalThrust>::new(),
-                    Bindings::spawn(Bidirectional {
-                        positive: Binding::from(KeyCode::Space),
-                        negative: Binding::from(KeyCode::ControlLeft),
-                    })
-                ),
-                (
-                    Action::<Roll>::new(),
-                    Bindings::spawn(Bidirectional {
-                        positive: Binding::from(KeyCode::KeyA),
-                        negative: Binding::from(KeyCode::KeyD),
-                    })
-                ),
-                (
-                    Action::<PitchYaw>::new(),
-                    Negate::all(),
-                    bindings![(Binding::mouse_motion())]
-                ),
-            ]);
-
             commands.entity(ship_entity).insert((
                 ControlledShip,
                 FlightControls::default(),
                 OnPiloting,
                 RigidBody::Dynamic,
-                actions,
+                actions!(
+                    OnPiloting[
+                    (
+                        Action::<Thrust>::new(),
+                        Bindings::spawn(Bidirectional {
+                            positive: Binding::from(KeyCode::KeyW),
+                            negative: Binding::from(KeyCode::KeyS),
+                        }
+                    )
+                    ),
+                    (
+                        Action::<LateralThrust>::new(),
+                        Negate::all(),
+                        Bindings::spawn(Bidirectional {
+                            positive: Binding::from(KeyCode::KeyE),
+                            negative: Binding::from(KeyCode::KeyQ),
+                        })
+                    ),
+                    (
+                        Action::<VerticalThrust>::new(),
+                        Bindings::spawn(Bidirectional {
+                            positive: Binding::from(KeyCode::Space),
+                            negative: Binding::from(KeyCode::ControlLeft),
+                        })
+                    ),
+                    (
+                        Action::<Roll>::new(),
+                        Bindings::spawn(Bidirectional {
+                            positive: Binding::from(KeyCode::KeyA),
+                            negative: Binding::from(KeyCode::KeyD),
+                        })
+                    ),
+                    (
+                        Action::<PitchYaw>::new(),
+                        Negate::all(),
+                        bindings![(Binding::mouse_motion())]
+                    ),
+                ]),
             ));
 
             let ship = stdb.db().ships().id().find(&ship.ship_id).unwrap();
@@ -142,15 +139,13 @@ fn on_ship_pilot_inserted(
                 .find(&ship.ship_type_id)
                 .unwrap();
 
-            commands.entity(camera_entity).insert(FollowCamera::new(
-                ship_entity,
-                Vec3::new(
+            commands.entity(camera_entity).insert((
+                ChildOf(ship_entity),
+                Transform::from_xyz(
                     ship_data.camera_offset_x,
                     ship_data.camera_offset_y,
                     ship_data.camera_offset_z,
                 ),
-                Vec3::new(0.0, 2.0, -100.0),
-                Vec3::splat(50.0),
             ));
         } else {
             warn!(
@@ -165,11 +160,9 @@ fn on_ship_pilot_inserted(
 fn on_ship_pilot_removed(
     mut commands: Commands,
     mut events: ReadDeleteEvent<ShipPilot>,
-    camera_entity: Single<Entity, With<PlayerCamera>>,
     ships: Res<ShipsRegistry>,
     stdb: SpacetimeDB,
 ) {
-    let camera_entity = camera_entity.into_inner();
     for event in events.read() {
         // We don't care about pilots that are not us
         if event.row.player_id != stdb.identity() {
@@ -188,8 +181,6 @@ fn on_ship_pilot_removed(
                 .remove::<RigidBody>()
                 .remove_with_requires::<OnPiloting>()
                 .despawn_related::<Actions<OnPiloting>>();
-
-            commands.entity(camera_entity).remove::<FollowCamera>();
         } else {
             warn!("Ship with ID {} not found for pilot removal", ship.ship_id);
         }
