@@ -1,4 +1,3 @@
-use log::debug;
 use spacetimedb::{reducer, ReducerContext, Table};
 
 use crate::tables::{ship_locations, ship_pilots, ships, Ship, ShipLocation, ShipPilot};
@@ -41,7 +40,6 @@ fn player_move_ship(
     rot_w: f32,
 ) {
     if let Some(ship) = ctx.db.ship_pilots().player_id().find(ctx.sender) {
-        debug!("Player {} moving ship {}", ctx.sender, ship.ship_id);
         ctx.db.ship_locations().ship_id().update(ShipLocation {
             ship_id: ship.ship_id,
             x,

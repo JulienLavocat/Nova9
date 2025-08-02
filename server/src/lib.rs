@@ -5,6 +5,7 @@ use tables::{players, ship_locations, ship_pilots, ships, Player};
 mod init;
 mod player;
 mod tables;
+mod world;
 
 #[reducer(client_connected)]
 fn on_connected(ctx: &ReducerContext) {

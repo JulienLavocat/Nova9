@@ -1,10 +1,15 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use bevy::{platform::collections::HashMap, prelude::*};
-use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent};
+use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent};
 
 use crate::{assets_loader::ModelAssets, bindings::Station as StationRow, materials::GameMaterial};
 
 #[derive(Component, Debug, Clone)]
-pub struct Station;
+pub struct Station {
+    pub rotation_angle: f32,
+    pub reach_angle_at: u128,
+}
 
 #[derive(Resource, Default, Debug, Clone)]
 struct StationsRegistry {
@@ -31,6 +36,7 @@ impl Plugin for StationsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<StationsRegistry>()
             .add_systems(PreUpdate, spawn_stations)
+            .add_systems(Update, (update_stations, rotate_stations))
             .add_systems(PostUpdate, remove_stations);
     }
 }
@@ -47,7 +53,10 @@ fn spawn_stations(
 
         let entity = commands
             .spawn((
-                Station,
+                Station {
+                    rotation_angle: station.target_angle,
+                    reach_angle_at: station.reach_angle_at,
+                },
                 Name::new(format!("Station {}", station.id)),
                 SceneRoot(model_assets.ship_station_01.clone()),
                 Transform::from_xyz(station.x, station.y, station.z),
@@ -55,6 +64,29 @@ fn spawn_stations(
             ))
             .id();
         registry.register(station.id, entity);
+    }
+}
+
+fn update_stations(
+    mut events: ReadUpdateEvent<StationRow>,
+    mut commands: Commands,
+    registry: ResMut<StationsRegistry>,
+) {
+    for event in events.read() {
+        trace!("Updating station: {:?}", event.new);
+        let station = &event.new;
+
+        if let Some(entity) = registry.get(station.id) {
+            commands.entity(*entity).insert(Station {
+                rotation_angle: station.target_angle,
+                reach_angle_at: station.reach_angle_at,
+            });
+        } else {
+            warn!(
+                "Tried to update station with id {} but it was not found in the registry",
+                station.id
+            );
+        }
     }
 }
 
@@ -76,5 +108,24 @@ fn remove_stations(
                 station.id
             );
         }
+    }
+}
+
+fn rotate_stations(mut query: Query<(&mut Transform, &Station)>, time: Res<Time>) {
+    let now_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis();
+
+    for (mut transform, station) in query.iter_mut() {
+        let current_rotation = transform.rotation;
+        let target_rotation = Quat::from_rotation_y(station.rotation_angle);
+
+        // Compute time remaining until target time is reached (in seconds)
+        let remaining =
+            ((station.reach_angle_at + 100) as i128 - now_ms as i128).max(0) as f32 / 1000.0;
+
+        let t = (time.delta_secs() / remaining).clamp(0.0, 1.0);
+        transform.rotation = current_rotation.slerp(target_rotation, t);
     }
 }

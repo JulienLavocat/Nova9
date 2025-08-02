@@ -22,8 +22,11 @@ pub mod ship_type;
 pub mod ship_type_type;
 pub mod ship_types_table;
 pub mod ships_table;
+pub mod station_rotation_update_table;
+pub mod station_rotation_update_type;
 pub mod station_type;
 pub mod stations_table;
+pub mod world_update_stations_rotation_reducer;
 
 pub use asteroid_type::Asteroid;
 pub use asteroids_table::*;
@@ -45,8 +48,14 @@ pub use ship_type::Ship;
 pub use ship_type_type::ShipType;
 pub use ship_types_table::*;
 pub use ships_table::*;
+pub use station_rotation_update_table::*;
+pub use station_rotation_update_type::StationRotationUpdate;
 pub use station_type::Station;
 pub use stations_table::*;
+pub use world_update_stations_rotation_reducer::{
+    set_flags_for_world_update_stations_rotation, world_update_stations_rotation,
+    WorldUpdateStationsRotationCallbackId,
+};
 
 #[derive(Clone, PartialEq, Debug)]
 
@@ -68,6 +77,9 @@ pub enum Reducer {
         rot_w: f32,
     },
     PlayerReady,
+    WorldUpdateStationsRotation {
+        update: StationRotationUpdate,
+    },
 }
 
 impl __sdk::InModule for Reducer {
@@ -81,6 +93,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::OnDisconnected => "on_disconnected",
             Reducer::PlayerMoveShip { .. } => "player_move_ship",
             Reducer::PlayerReady => "player_ready",
+            Reducer::WorldUpdateStationsRotation { .. } => "world_update_stations_rotation",
         }
     }
 }
@@ -110,6 +123,12 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 )?
                 .into(),
             ),
+            "world_update_stations_rotation" => {
+                Ok(__sdk::parse_reducer_args::<
+                    world_update_stations_rotation_reducer::WorldUpdateStationsRotationArgs,
+                >("world_update_stations_rotation", &value.args)?
+                .into())
+            }
             unknown => {
                 Err(
                     __sdk::InternalError::unknown_name("reducer", unknown, "ReducerCallInfo")
@@ -130,6 +149,7 @@ pub struct DbUpdate {
     ship_pilots: __sdk::TableUpdate<ShipPilot>,
     ship_types: __sdk::TableUpdate<ShipType>,
     ships: __sdk::TableUpdate<Ship>,
+    station_rotation_update: __sdk::TableUpdate<StationRotationUpdate>,
     stations: __sdk::TableUpdate<Station>,
 }
 
@@ -157,6 +177,9 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "ships" => db_update
                     .ships
                     .append(ships_table::parse_table_update(table_update)?),
+                "station_rotation_update" => db_update.station_rotation_update.append(
+                    station_rotation_update_table::parse_table_update(table_update)?,
+                ),
                 "stations" => db_update
                     .stations
                     .append(stations_table::parse_table_update(table_update)?),
@@ -204,6 +227,12 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.ships = cache
             .apply_diff_to_table::<Ship>("ships", &self.ships)
             .with_updates_by_pk(|row| &row.id);
+        diff.station_rotation_update = cache
+            .apply_diff_to_table::<StationRotationUpdate>(
+                "station_rotation_update",
+                &self.station_rotation_update,
+            )
+            .with_updates_by_pk(|row| &row.scheduled_id);
         diff.stations = cache
             .apply_diff_to_table::<Station>("stations", &self.stations)
             .with_updates_by_pk(|row| &row.id);
@@ -222,6 +251,7 @@ pub struct AppliedDiff<'r> {
     ship_pilots: __sdk::TableAppliedDiff<'r, ShipPilot>,
     ship_types: __sdk::TableAppliedDiff<'r, ShipType>,
     ships: __sdk::TableAppliedDiff<'r, Ship>,
+    station_rotation_update: __sdk::TableAppliedDiff<'r, StationRotationUpdate>,
     stations: __sdk::TableAppliedDiff<'r, Station>,
 }
 
@@ -245,6 +275,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         callbacks.invoke_table_row_callbacks::<ShipPilot>("ship_pilots", &self.ship_pilots, event);
         callbacks.invoke_table_row_callbacks::<ShipType>("ship_types", &self.ship_types, event);
         callbacks.invoke_table_row_callbacks::<Ship>("ships", &self.ships, event);
+        callbacks.invoke_table_row_callbacks::<StationRotationUpdate>(
+            "station_rotation_update",
+            &self.station_rotation_update,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<Station>("stations", &self.stations, event);
     }
 }
@@ -827,6 +862,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
         ship_pilots_table::register_table(client_cache);
         ship_types_table::register_table(client_cache);
         ships_table::register_table(client_cache);
+        station_rotation_update_table::register_table(client_cache);
         stations_table::register_table(client_cache);
     }
 }

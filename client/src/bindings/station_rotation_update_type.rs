@@ -8,17 +8,11 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
 #[derive(__lib::ser::Serialize, __lib::de::Deserialize, Clone, PartialEq, Debug)]
 #[sats(crate = __lib)]
-pub struct Station {
-    pub id: u64,
-    pub name: String,
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
-    pub rotation_speed: f32,
-    pub target_angle: f32,
-    pub reach_angle_at: u128,
+pub struct StationRotationUpdate {
+    pub scheduled_id: u64,
+    pub scheduled_at: __sdk::ScheduleAt,
 }
 
-impl __sdk::InModule for Station {
+impl __sdk::InModule for StationRotationUpdate {
     type Module = super::RemoteModule;
 }

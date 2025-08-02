@@ -1,8 +1,14 @@
-use std::f32::consts::TAU;
+use std::{f32::consts::TAU, time::Duration};
 
 use spacetimedb::{reducer, ReducerContext, Table};
 
-use crate::tables::{asteroids, ship_types, stations, Asteroid, ShipType, Station};
+use crate::{
+    tables::{asteroids, ship_types, stations, Asteroid, ShipType, Station},
+    world::{station_rotation_update, StationRotationUpdate},
+};
+
+/// The speed at which stations rotate in the world, in radians per second.
+const STATIONS_ROTATION_SPEED: f32 = 0.01;
 
 #[reducer(init)]
 pub fn init(ctx: &ReducerContext) {
@@ -33,6 +39,13 @@ pub fn init(ctx: &ReducerContext) {
         x: 0.0,
         y: 0.0,
         z: 0.0,
+        target_angle: 0.0,
+        rotation_speed: STATIONS_ROTATION_SPEED,
+        reach_angle_at: ctx
+            .timestamp
+            .to_duration_since_unix_epoch()
+            .unwrap()
+            .as_millis(),
     });
 
     let center_x = 0.0;
@@ -56,4 +69,8 @@ pub fn init(ctx: &ReducerContext) {
             scale: 10.0,
         });
     }
+
+    ctx.db
+        .station_rotation_update()
+        .insert(StationRotationUpdate::new(Duration::from_secs(5).into()));
 }

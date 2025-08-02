@@ -64,7 +64,7 @@ fn spawn_asteroid(
 
         let entity = commands
             .spawn((
-                Name::new(format!("Station {}", asteroid.id)),
+                Name::new(format!("Asteroid {}", asteroid.id)),
                 SceneRoot(model),
                 GameMaterial::Standard,
                 transform,
