@@ -1,6 +1,5 @@
-use std::f32::consts::PI;
-
 use asteroids::AsteroidsPlugin;
+use avian3d::math::PI;
 use bevy::prelude::*;
 use stations::StationsPlugin;
 
@@ -21,7 +20,7 @@ impl Plugin for WorldPlugin {
 fn subscribe_to_world(mut commands: Commands, stdb: SpacetimeDB) {
     commands.spawn((
         DirectionalLight {
-            illuminance: 1000.0,
+            illuminance: 500.0,
             color: Color::WHITE,
             shadows_enabled: true,
             ..default()
@@ -31,7 +30,6 @@ fn subscribe_to_world(mut commands: Commands, stdb: SpacetimeDB) {
 
     commands.insert_resource(AmbientLight {
         color: Color::srgb_u8(210, 220, 240),
-        brightness: 1.0,
         ..default()
     });
 

@@ -61,11 +61,7 @@ struct PitchYaw;
 
 #[derive(InputAction)]
 #[action_output(bool)]
-struct CaptureCursor;
-
-#[derive(InputAction)]
-#[action_output(bool)]
-struct ReleaseCursor;
+struct ToggleCaptureCursor;
 
 pub struct ShipControlsPlugin;
 
@@ -84,8 +80,7 @@ impl Plugin for ShipControlsPlugin {
                 (apply_inputs, apply_movement, debug_controls).chain(),
             )
             .add_systems(PostUpdate, send_location_updates)
-            .add_observer(capture_cursor)
-            .add_observer(release_cursor);
+            .add_observer(capture_cursor);
     }
 }
 
@@ -165,10 +160,8 @@ fn on_ship_pilot_inserted(
                         bindings![(Binding::mouse_motion())]
                     ),
                     (
-                        Action::<CaptureCursor>::new(),
-                        bindings![MouseButton::Left]),
-                    (
-                        Action::<ReleaseCursor>::new(),
+                        Action::<ToggleCaptureCursor>::new(),
+                        Hold::new(0.2),
                         bindings![KeyCode::Escape]
                     ),
                 ]),
@@ -333,15 +326,11 @@ fn send_location_updates(
     Ok(())
 }
 
-fn capture_cursor(_trigger: Trigger<Completed<CaptureCursor>>, mut window: Single<&mut Window>) {
-    grab_cursor(&mut window, true);
-}
-
-fn release_cursor(_trigger: Trigger<Completed<ReleaseCursor>>, mut window: Single<&mut Window>) {
-    grab_cursor(&mut window, false);
-}
-
-fn grab_cursor(window: &mut Window, grab: bool) {
+fn capture_cursor(
+    _trigger: Trigger<Completed<ToggleCaptureCursor>>,
+    mut window: Single<&mut Window>,
+) {
+    let grab = window.cursor_options.grab_mode == CursorGrabMode::None;
     window.cursor_options.grab_mode = if grab {
         CursorGrabMode::Confined
     } else {

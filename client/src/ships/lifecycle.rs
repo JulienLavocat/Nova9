@@ -45,6 +45,14 @@ fn spawn_ship(
             _ => panic!("Unknown ship type: {}", ship.ship_type_id),
         };
 
+        let ship_spot_light = SpotLight {
+            color: Color::WHITE,
+            shadows_enabled: true,
+            intensity: 100_000_000.0,
+            range: 500.0,
+            ..Default::default()
+        };
+
         let entity = commands
             .spawn((
                 Name::new(format!("Ship {}", ship.id)),
@@ -59,12 +67,15 @@ fn spawn_ship(
                 ExternalForce::default().with_persistence(false),
                 Collider::cuboid(5.0, 5.0, 5.0),
                 Transform::default(),
-                children![(
-                    SceneRoot(model.clone()),
-                    Transform::default()
-                        .with_rotation(Quat::from_rotation_y(-180.0_f32.to_radians())),
-                    GameMaterial::Ship
-                ),],
+                children![
+                    (
+                        SceneRoot(model.clone()),
+                        Transform::default()
+                            .with_rotation(Quat::from_rotation_y(-180.0_f32.to_radians())),
+                        GameMaterial::Ship,
+                    ),
+                    (ship_spot_light, Transform::from_xyz(0.0, 0.0, -15.0))
+                ],
             ))
             .id();
 

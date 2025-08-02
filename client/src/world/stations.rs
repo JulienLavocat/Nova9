@@ -64,9 +64,18 @@ fn spawn_stations(
                 children![
                     SceneRoot(model_assets.ship_station_02.clone()),
                     SceneRoot(model_assets.ship_station_03.clone()),
-                    SceneRoot(model_assets.ship_station_04.clone()),
-                    SceneRoot(model_assets.ship_station_05.clone()),
-                    SceneRoot(model_assets.ship_station_06.clone())
+                    (
+                        SceneRoot(model_assets.ship_station_04.clone()),
+                        Transform::from_xyz(0.0, -115.5, 0.0)
+                    ),
+                    (
+                        SceneRoot(model_assets.ship_station_05.clone()),
+                        Transform::from_xyz(0.0, -228.9, 0.0)
+                    ),
+                    (
+                        SceneRoot(model_assets.ship_station_06.clone()),
+                        Transform::from_xyz(0.0, 0.0, 0.0)
+                    ),
                 ],
             ))
             .id();
