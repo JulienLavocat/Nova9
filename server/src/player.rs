@@ -1,3 +1,4 @@
+use log::debug;
 use spacetimedb::{reducer, ReducerContext, Table};
 
 use crate::tables::{ship_locations, ship_pilots, ships, Ship, ShipLocation, ShipPilot};
@@ -26,4 +27,30 @@ fn player_ready(ctx: &ReducerContext) {
         ship_id: ship.id,
         player_id: ctx.sender,
     });
+}
+
+#[reducer]
+fn player_move_ship(
+    ctx: &ReducerContext,
+    x: f32,
+    y: f32,
+    z: f32,
+    rot_x: f32,
+    rot_y: f32,
+    rot_z: f32,
+    rot_w: f32,
+) {
+    if let Some(ship) = ctx.db.ship_pilots().player_id().find(ctx.sender) {
+        debug!("Player {} moving ship {}", ctx.sender, ship.ship_id);
+        ctx.db.ship_locations().ship_id().update(ShipLocation {
+            ship_id: ship.ship_id,
+            x,
+            y,
+            z,
+            rot_x,
+            rot_y,
+            rot_z,
+            rot_w,
+        });
+    }
 }

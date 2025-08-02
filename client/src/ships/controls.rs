@@ -1,12 +1,15 @@
 use avian3d::prelude::{AngularVelocity, ExternalForce, ExternalTorque, LinearVelocity, RigidBody};
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    window::{CursorGrabMode, Window},
+};
 use bevy_enhanced_input::prelude::*;
-use bevy_inspector_egui::{bevy_egui::EguiContexts, egui::Window};
+use bevy_inspector_egui::{bevy_egui::EguiContexts, egui::Window as EguiWindow};
 use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
     GameState,
-    bindings::{ShipPilot, ShipTypesTableAccess, ShipsTableAccess},
+    bindings::{ShipPilot, ShipTypesTableAccess, ShipsTableAccess, player_move_ship},
     player::PlayerCamera,
     ships::components::ControlledShip,
     spacetimedb::SpacetimeDB,
@@ -15,7 +18,7 @@ use crate::{
 use super::{components::Ship, resources::ShipsRegistry};
 
 #[derive(Component, Debug, Default, Reflect)]
-pub struct FlightControls {
+struct FlightControls {
     pub thrust: f32,
     pub vertical_thrust: f32,
     pub lateral_thrust: f32,
@@ -24,8 +27,17 @@ pub struct FlightControls {
     pub yaw: f32,
 }
 
+#[derive(Component, Debug)]
+struct ShipLocationUpdate {
+    timer: Timer,
+    last_position: Vec3,
+    last_rotation: Quat,
+    position_threshold: f32,
+    rotation_threshold: f32,
+}
+
 #[derive(Component)]
-pub struct OnPiloting;
+struct OnPiloting;
 
 #[derive(InputAction)]
 #[action_output(f32)]
@@ -47,6 +59,14 @@ struct Roll;
 #[action_output(Vec2)]
 struct PitchYaw;
 
+#[derive(InputAction)]
+#[action_output(bool)]
+struct CaptureCursor;
+
+#[derive(InputAction)]
+#[action_output(bool)]
+struct ReleaseCursor;
+
 pub struct ShipControlsPlugin;
 
 impl Plugin for ShipControlsPlugin {
@@ -62,35 +82,51 @@ impl Plugin for ShipControlsPlugin {
             .add_systems(
                 Update,
                 (apply_inputs, apply_movement, debug_controls).chain(),
-            );
+            )
+            .add_systems(PostUpdate, send_location_updates)
+            .add_observer(capture_cursor)
+            .add_observer(release_cursor);
     }
 }
 
 fn on_ship_pilot_inserted(
     mut commands: Commands,
     mut events: ReadInsertEvent<ShipPilot>,
+    mut ships: ResMut<ShipsRegistry>,
+    mut window: Single<&mut Window>,
     camera_transform: Single<Entity, With<PlayerCamera>>,
-    ships: Res<ShipsRegistry>,
     stdb: SpacetimeDB,
 ) {
     let camera_entity = camera_transform.into_inner();
 
     for event in events.read() {
-        // We don't care about pilots that are not us
-        if event.row.player_id != stdb.identity() {
-            continue;
-        }
-
         let ship = &event.row;
 
-        if let Some(ship_entity) = ships.get(ship.ship_id) {
+        if let Some(ship_details) = ships.get_mut(ship.ship_id) {
+            ship_details.set_pilot(ship.player_id);
+
+            // We don't care about pilots that are not us for the moment
+            if event.row.player_id != stdb.identity() {
+                continue;
+            }
+
             debug!("Assigning pilot to ship: {:?}", ship);
 
-            commands.entity(ship_entity).insert((
+            window.cursor_options.grab_mode = CursorGrabMode::Locked;
+            window.cursor_options.visible = false;
+
+            commands.entity(ship_details.entity()).insert((
                 ControlledShip,
                 FlightControls::default(),
                 OnPiloting,
                 RigidBody::Dynamic,
+                ShipLocationUpdate {
+                    timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+                    last_position: Vec3::ZERO,
+                    last_rotation: Quat::IDENTITY,
+                    position_threshold: 0.1,
+                    rotation_threshold: 0.01,
+                },
                 actions!(
                     OnPiloting[
                     (
@@ -128,6 +164,13 @@ fn on_ship_pilot_inserted(
                         Negate::all(),
                         bindings![(Binding::mouse_motion())]
                     ),
+                    (
+                        Action::<CaptureCursor>::new(),
+                        bindings![MouseButton::Left]),
+                    (
+                        Action::<ReleaseCursor>::new(),
+                        bindings![KeyCode::Escape]
+                    ),
                 ]),
             ));
 
@@ -140,7 +183,7 @@ fn on_ship_pilot_inserted(
                 .unwrap();
 
             commands.entity(camera_entity).insert((
-                ChildOf(ship_entity),
+                ChildOf(ship_details.entity()),
                 Transform::from_xyz(
                     ship_data.camera_offset_x,
                     ship_data.camera_offset_y,
@@ -168,14 +211,15 @@ fn on_ship_pilot_removed(
 
         let ship = &event.row;
 
-        if let Some(ship_entity) = ships.get(ship.ship_id) {
+        if let Some(ship_data) = ships.get(ship.ship_id) {
             debug!("Removing pilot from ship: {:?}", ship);
             // We don't remove the relationship between the camera and the ship, as when we go back to being on foot,
             // the camera will be reattached to the player entity.
             commands
-                .entity(ship_entity)
+                .entity(ship_data.entity())
                 .remove::<ControlledShip>()
                 .remove::<RigidBody>()
+                .remove::<ShipLocationUpdate>()
                 .remove_with_requires::<OnPiloting>()
                 .despawn_related::<Actions<OnPiloting>>();
         } else {
@@ -215,10 +259,15 @@ fn apply_movement(
         ),
         With<ControlledShip>,
     >,
+    window: Single<&Window>,
     stdb: SpacetimeDB,
     time: Res<Time>,
 ) -> Result {
     // Main source: https://www.youtube.com/watch?v=fZvJvZA4nhY
+
+    if window.cursor_options.grab_mode == CursorGrabMode::None {
+        return Ok(());
+    }
 
     let (mut external_torque, mut external_force, transform, flight_controls, ship) =
         query.into_inner();
@@ -255,6 +304,52 @@ fn apply_movement(
     Ok(())
 }
 
+fn send_location_updates(
+    ship: Single<(&Transform, &mut ShipLocationUpdate), With<ControlledShip>>,
+    time: Res<Time>,
+    stdb: SpacetimeDB,
+) -> Result {
+    let (ship_transform, mut update) = ship.into_inner();
+    if !update.timer.tick(time.delta()).just_finished() {
+        return Ok(());
+    }
+
+    let pos = ship_transform.translation;
+    let rot = ship_transform.rotation;
+
+    // If the position is greater than thresold or rotation has changed, we send an update
+    let pos_diff = update.last_position.distance(pos);
+    let rot_diff = update.last_rotation.angle_between(rot);
+    if pos_diff < update.position_threshold && rot_diff < update.rotation_threshold {
+        return Ok(());
+    }
+
+    stdb.reducers()
+        .player_move_ship(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w)?;
+
+    update.last_position = pos;
+    update.last_rotation = rot;
+
+    Ok(())
+}
+
+fn capture_cursor(_trigger: Trigger<Completed<CaptureCursor>>, mut window: Single<&mut Window>) {
+    grab_cursor(&mut window, true);
+}
+
+fn release_cursor(_trigger: Trigger<Completed<ReleaseCursor>>, mut window: Single<&mut Window>) {
+    grab_cursor(&mut window, false);
+}
+
+fn grab_cursor(window: &mut Window, grab: bool) {
+    window.cursor_options.grab_mode = if grab {
+        CursorGrabMode::Confined
+    } else {
+        CursorGrabMode::None
+    };
+    window.cursor_options.visible = !grab;
+}
+
 fn debug_controls(
     flight_controls: Single<
         (
@@ -269,7 +364,7 @@ fn debug_controls(
 ) -> Result {
     let (flight_controls, external_torque, angular_velocity, linear_velocity) =
         flight_controls.into_inner();
-    Window::new("Flight Controls").show(egui_context.ctx_mut()?, |ui| {
+    EguiWindow::new("Flight Controls").show(egui_context.ctx_mut()?, |ui| {
         ui.label(format!("Thrust: {}", flight_controls.thrust));
         ui.label(format!("Strafe: {}", flight_controls.lateral_thrust));
         ui.label(format!("Up/Down: {}", flight_controls.vertical_thrust));
@@ -278,7 +373,7 @@ fn debug_controls(
         ui.label(format!("Yaw: {}", flight_controls.yaw));
     });
 
-    Window::new("Ship Movement").show(egui_context.ctx_mut()?, |ui| {
+    EguiWindow::new("Ship Movement").show(egui_context.ctx_mut()?, |ui| {
         ui.label(format!(
             "External Torque: ({:.2}, {:.2}, {:.2})",
             external_torque.x, external_torque.y, external_torque.z

@@ -9,3 +9,6 @@ crate-type = ["cdylib"]
 [dependencies]
 spacetimedb = { version = "1.2.0", features = ["rand", "unstable"] }
 log = "0.4"
+
+[lints.clippy]
+too_many_arguments = "allow"

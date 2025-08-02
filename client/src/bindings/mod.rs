@@ -10,6 +10,7 @@ pub mod asteroid_type;
 pub mod asteroids_table;
 pub mod on_connected_reducer;
 pub mod on_disconnected_reducer;
+pub mod player_move_ship_reducer;
 pub mod player_ready_reducer;
 pub mod player_type;
 pub mod players_table;
@@ -29,6 +30,9 @@ pub use asteroids_table::*;
 pub use on_connected_reducer::{on_connected, set_flags_for_on_connected, OnConnectedCallbackId};
 pub use on_disconnected_reducer::{
     on_disconnected, set_flags_for_on_disconnected, OnDisconnectedCallbackId,
+};
+pub use player_move_ship_reducer::{
+    player_move_ship, set_flags_for_player_move_ship, PlayerMoveShipCallbackId,
 };
 pub use player_ready_reducer::{player_ready, set_flags_for_player_ready, PlayerReadyCallbackId};
 pub use player_type::Player;
@@ -54,6 +58,15 @@ pub use stations_table::*;
 pub enum Reducer {
     OnConnected,
     OnDisconnected,
+    PlayerMoveShip {
+        x: f32,
+        y: f32,
+        z: f32,
+        rot_x: f32,
+        rot_y: f32,
+        rot_z: f32,
+        rot_w: f32,
+    },
     PlayerReady,
 }
 
@@ -66,6 +79,7 @@ impl __sdk::Reducer for Reducer {
         match self {
             Reducer::OnConnected => "on_connected",
             Reducer::OnDisconnected => "on_disconnected",
+            Reducer::PlayerMoveShip { .. } => "player_move_ship",
             Reducer::PlayerReady => "player_ready",
         }
     }
@@ -84,6 +98,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
             "on_disconnected" => Ok(__sdk::parse_reducer_args::<
                 on_disconnected_reducer::OnDisconnectedArgs,
             >("on_disconnected", &value.args)?
+            .into()),
+            "player_move_ship" => Ok(__sdk::parse_reducer_args::<
+                player_move_ship_reducer::PlayerMoveShipArgs,
+            >("player_move_ship", &value.args)?
             .into()),
             "player_ready" => Ok(
                 __sdk::parse_reducer_args::<player_ready_reducer::PlayerReadyArgs>(

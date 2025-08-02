@@ -80,8 +80,8 @@ fn despawn_ship(
     for event in events.read() {
         let ship = &event.row;
         debug!("Despawning ship: {:?}", ship);
-        if let Some(entity) = ships.get(ship.id) {
-            commands.entity(entity).despawn();
+        if let Some(ship_data) = ships.get(ship.id) {
+            commands.entity(ship_data.entity()).despawn();
             ships.remove(ship.id);
         } else {
             warn!("Ship[{}] not found for despawn", ship.id);
