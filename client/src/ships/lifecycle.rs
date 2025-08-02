@@ -51,7 +51,6 @@ fn spawn_ship(
                 Ship {
                     ship_type: ship.ship_type_id,
                 },
-                Transform::from_xyz(ship.x, ship.y, ship.z),
                 Visibility::Visible,
                 Mass(ship_type.mass),
                 LinearDamping(ship_type.linear_damping),
@@ -59,6 +58,7 @@ fn spawn_ship(
                 ExternalTorque::default().with_persistence(false),
                 ExternalForce::default().with_persistence(false),
                 Collider::cuboid(5.0, 5.0, 5.0),
+                Transform::default(),
                 children![(
                     SceneRoot(model.clone()),
                     Transform::default()
@@ -84,7 +84,7 @@ fn despawn_ship(
             commands.entity(entity).despawn();
             ships.remove(ship.id);
         } else {
-            warn!("Ship with ID {} not found for despawn", ship.id);
+            warn!("Ship[{}] not found for despawn", ship.id);
             commands.send_event(DeleteEvent { row: ship.clone() });
         }
     }

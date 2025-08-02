@@ -8,7 +8,4 @@ pub struct Ship {
     pub ship_type_id: u64,
     #[index(btree)]
     pub owner_id: Identity,
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
 }

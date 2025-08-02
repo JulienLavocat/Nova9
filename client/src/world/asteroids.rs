@@ -39,7 +39,7 @@ fn spawn_asteroid(
     model_assets: Res<ModelAssets>,
 ) {
     for event in events.read() {
-        debug!("Spawning asteroid: {:?}", event.row);
+        trace!("Spawning asteroid: {:?}", event.row);
         let asteroid = &event.row;
 
         let transform = Transform::from_xyz(asteroid.pos_x, asteroid.pos_y, asteroid.pos_z)
@@ -80,7 +80,7 @@ fn remove_asteroid(
     mut events: ReadDeleteEvent<Asteroid>,
 ) {
     for event in events.read() {
-        debug!("Removing asteroid: {:?}", event.row);
+        trace!("Removing asteroid: {:?}", event.row);
         let asteroid = &event.row;
 
         if let Some(entity) = registry.get(asteroid.id) {

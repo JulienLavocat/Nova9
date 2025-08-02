@@ -148,10 +148,7 @@ fn on_ship_pilot_inserted(
                 ),
             ));
         } else {
-            warn!(
-                "Ship with ID {} not found for pilot assignment",
-                ship.ship_id
-            );
+            warn!("Ship[{}] not found for pilot assignment", ship.ship_id);
             commands.send_event(InsertEvent { row: ship.clone() });
         }
     }
@@ -182,7 +179,7 @@ fn on_ship_pilot_removed(
                 .remove_with_requires::<OnPiloting>()
                 .despawn_related::<Actions<OnPiloting>>();
         } else {
-            warn!("Ship with ID {} not found for pilot removal", ship.ship_id);
+            warn!("Ship[{}] not found for pilot removal", ship.ship_id);
         }
     }
 }

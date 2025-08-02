@@ -13,6 +13,8 @@ pub mod on_disconnected_reducer;
 pub mod player_ready_reducer;
 pub mod player_type;
 pub mod players_table;
+pub mod ship_location_type;
+pub mod ship_locations_table;
 pub mod ship_pilot_type;
 pub mod ship_pilots_table;
 pub mod ship_type;
@@ -31,6 +33,8 @@ pub use on_disconnected_reducer::{
 pub use player_ready_reducer::{player_ready, set_flags_for_player_ready, PlayerReadyCallbackId};
 pub use player_type::Player;
 pub use players_table::*;
+pub use ship_location_type::ShipLocation;
+pub use ship_locations_table::*;
 pub use ship_pilot_type::ShipPilot;
 pub use ship_pilots_table::*;
 pub use ship_type::Ship;
@@ -104,6 +108,7 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 pub struct DbUpdate {
     asteroids: __sdk::TableUpdate<Asteroid>,
     players: __sdk::TableUpdate<Player>,
+    ship_locations: __sdk::TableUpdate<ShipLocation>,
     ship_pilots: __sdk::TableUpdate<ShipPilot>,
     ship_types: __sdk::TableUpdate<ShipType>,
     ships: __sdk::TableUpdate<Ship>,
@@ -122,6 +127,9 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "players" => db_update
                     .players
                     .append(players_table::parse_table_update(table_update)?),
+                "ship_locations" => db_update
+                    .ship_locations
+                    .append(ship_locations_table::parse_table_update(table_update)?),
                 "ship_pilots" => db_update
                     .ship_pilots
                     .append(ship_pilots_table::parse_table_update(table_update)?),
@@ -166,6 +174,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.players = cache
             .apply_diff_to_table::<Player>("players", &self.players)
             .with_updates_by_pk(|row| &row.id);
+        diff.ship_locations = cache
+            .apply_diff_to_table::<ShipLocation>("ship_locations", &self.ship_locations)
+            .with_updates_by_pk(|row| &row.ship_id);
         diff.ship_pilots = cache
             .apply_diff_to_table::<ShipPilot>("ship_pilots", &self.ship_pilots)
             .with_updates_by_pk(|row| &row.ship_id);
@@ -189,6 +200,7 @@ impl __sdk::DbUpdate for DbUpdate {
 pub struct AppliedDiff<'r> {
     asteroids: __sdk::TableAppliedDiff<'r, Asteroid>,
     players: __sdk::TableAppliedDiff<'r, Player>,
+    ship_locations: __sdk::TableAppliedDiff<'r, ShipLocation>,
     ship_pilots: __sdk::TableAppliedDiff<'r, ShipPilot>,
     ship_types: __sdk::TableAppliedDiff<'r, ShipType>,
     ships: __sdk::TableAppliedDiff<'r, Ship>,
@@ -207,6 +219,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
     ) {
         callbacks.invoke_table_row_callbacks::<Asteroid>("asteroids", &self.asteroids, event);
         callbacks.invoke_table_row_callbacks::<Player>("players", &self.players, event);
+        callbacks.invoke_table_row_callbacks::<ShipLocation>(
+            "ship_locations",
+            &self.ship_locations,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<ShipPilot>("ship_pilots", &self.ship_pilots, event);
         callbacks.invoke_table_row_callbacks::<ShipType>("ship_types", &self.ship_types, event);
         callbacks.invoke_table_row_callbacks::<Ship>("ships", &self.ships, event);
@@ -788,6 +805,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
         asteroids_table::register_table(client_cache);
         players_table::register_table(client_cache);
+        ship_locations_table::register_table(client_cache);
         ship_pilots_table::register_table(client_cache);
         ship_types_table::register_table(client_cache);
         ships_table::register_table(client_cache);

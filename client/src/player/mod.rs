@@ -3,7 +3,6 @@ use bevy::{
     prelude::*,
     render::render_resource::{TextureViewDescriptor, TextureViewDimension},
 };
-use bevy_flycam::FlyCam;
 
 use crate::{
     GameState, assets_loader::TextureAssets, bindings::player_ready, spacetimedb::SpacetimeDB,
