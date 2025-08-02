@@ -1,10 +1,9 @@
-use avian3d::prelude::{AngularVelocity, ExternalForce, ExternalTorque, LinearVelocity, RigidBody};
+use avian3d::prelude::{ExternalForce, ExternalTorque, RigidBody};
 use bevy::{
     prelude::*,
     window::{CursorGrabMode, Window},
 };
 use bevy_enhanced_input::prelude::*;
-use bevy_inspector_egui::{bevy_egui::EguiContexts, egui::Window as EguiWindow};
 use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
@@ -75,10 +74,7 @@ impl Plugin for ShipControlsPlugin {
                     .chain()
                     .run_if(in_state(GameState::InGame)),
             )
-            .add_systems(
-                Update,
-                (apply_inputs, apply_movement, debug_controls).chain(),
-            )
+            .add_systems(Update, (apply_inputs, apply_movement).chain())
             .add_systems(PostUpdate, send_location_updates)
             .add_observer(capture_cursor);
     }
@@ -339,49 +335,49 @@ fn capture_cursor(
     window.cursor_options.visible = !grab;
 }
 
-fn debug_controls(
-    flight_controls: Single<
-        (
-            &FlightControls,
-            &ExternalTorque,
-            &AngularVelocity,
-            &LinearVelocity,
-        ),
-        With<ControlledShip>,
-    >,
-    mut egui_context: EguiContexts,
-) -> Result {
-    // let (flight_controls, external_torque, angular_velocity, linear_velocity) =
-    //     flight_controls.into_inner();
-    // EguiWindow::new("Flight Controls").show(egui_context.ctx_mut()?, |ui| {
-    //     ui.label(format!("Thrust: {}", flight_controls.thrust));
-    //     ui.label(format!("Strafe: {}", flight_controls.lateral_thrust));
-    //     ui.label(format!("Up/Down: {}", flight_controls.vertical_thrust));
-    //     ui.label(format!("Roll: {}", flight_controls.roll));
-    //     ui.label(format!("Pitch: {}", flight_controls.pitch));
-    //     ui.label(format!("Yaw: {}", flight_controls.yaw));
-    // });
-    //
-    // EguiWindow::new("Ship Movement").show(egui_context.ctx_mut()?, |ui| {
-    //     ui.label(format!(
-    //         "External Torque: ({:.2}, {:.2}, {:.2})",
-    //         external_torque.x, external_torque.y, external_torque.z
-    //     ));
-    //     ui.label(format!(
-    //         "Angular Velocity: ({:.2}, {:.2}, {:.2}) -> {:.2} rad/s",
-    //         angular_velocity.x,
-    //         angular_velocity.y,
-    //         angular_velocity.z,
-    //         angular_velocity.length()
-    //     ));
-    //     ui.label(format!(
-    //         "Linear Velocity: ({:.2}, {:.2}, {:.2}) -> {:.2} m/s",
-    //         linear_velocity.x,
-    //         linear_velocity.y,
-    //         linear_velocity.z,
-    //         linear_velocity.length()
-    //     ));
-    // });
-    //
-    Ok(())
-}
+// fn debug_controls(
+//     flight_controls: Single<
+//         (
+//             &FlightControls,
+//             &ExternalTorque,
+//             &AngularVelocity,
+//             &LinearVelocity,
+//         ),
+//         With<ControlledShip>,
+//     >,
+//     mut egui_context: EguiContexts,
+// ) -> Result {
+//     // let (flight_controls, external_torque, angular_velocity, linear_velocity) =
+//     //     flight_controls.into_inner();
+//     // EguiWindow::new("Flight Controls").show(egui_context.ctx_mut()?, |ui| {
+//     //     ui.label(format!("Thrust: {}", flight_controls.thrust));
+//     //     ui.label(format!("Strafe: {}", flight_controls.lateral_thrust));
+//     //     ui.label(format!("Up/Down: {}", flight_controls.vertical_thrust));
+//     //     ui.label(format!("Roll: {}", flight_controls.roll));
+//     //     ui.label(format!("Pitch: {}", flight_controls.pitch));
+//     //     ui.label(format!("Yaw: {}", flight_controls.yaw));
+//     // });
+//     //
+//     // EguiWindow::new("Ship Movement").show(egui_context.ctx_mut()?, |ui| {
+//     //     ui.label(format!(
+//     //         "External Torque: ({:.2}, {:.2}, {:.2})",
+//     //         external_torque.x, external_torque.y, external_torque.z
+//     //     ));
+//     //     ui.label(format!(
+//     //         "Angular Velocity: ({:.2}, {:.2}, {:.2}) -> {:.2} rad/s",
+//     //         angular_velocity.x,
+//     //         angular_velocity.y,
+//     //         angular_velocity.z,
+//     //         angular_velocity.length()
+//     //     ));
+//     //     ui.label(format!(
+//     //         "Linear Velocity: ({:.2}, {:.2}, {:.2}) -> {:.2} m/s",
+//     //         linear_velocity.x,
+//     //         linear_velocity.y,
+//     //         linear_velocity.z,
+//     //         linear_velocity.length()
+//     //     ));
+//     // });
+//     //
+//     Ok(())
+// }
