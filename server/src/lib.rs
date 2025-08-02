@@ -1,5 +1,5 @@
 use spacetimedb::{reducer, ReducerContext, Table};
-use tables::{players, ship_pilots, ships, Player};
+use tables::{players, ship_locations, ship_pilots, ships, Player};
 
 mod init;
 mod player;
@@ -13,6 +13,14 @@ fn on_connected(ctx: &ReducerContext) {
 #[reducer(client_disconnected)]
 fn on_disconnected(ctx: &ReducerContext) {
     ctx.db.players().id().delete(ctx.sender);
-    ctx.db.ships().owner_id().delete(ctx.sender);
     ctx.db.ship_pilots().player_id().delete(ctx.sender);
+
+    ctx.db
+        .ships()
+        .owner_id()
+        .filter(ctx.sender)
+        .for_each(|ship| {
+            ctx.db.ships().id().delete(ship.id);
+            ctx.db.ship_locations().ship_id().delete(ship.id);
+        });
 }
