@@ -8,6 +8,7 @@ use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_flycam::{MovementSettings, NoCameraPlayerPlugin};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use materials::MaterialsPlugin;
+use misc::MiscPlugin;
 use player::PlayerPlugin;
 use shaders::ShadersPlugin;
 use ships::ShipsPlugin;
@@ -17,6 +18,7 @@ use world::WorldPlugin;
 mod assets_loader;
 mod bindings;
 mod materials;
+mod misc;
 mod player;
 mod shaders;
 mod ships;
@@ -54,6 +56,7 @@ fn main() -> AppExit {
         ))
         .add_plugins((
             AssetsLoaderPlugin,
+            MiscPlugin,
             SpacetimeDbPlugin,
             MaterialsPlugin,
             PlayerPlugin,
