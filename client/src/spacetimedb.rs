@@ -32,8 +32,12 @@ impl Plugin for SpacetimeDbPlugin {
                 .with_connection(|send_connected, send_disconnected, send_error, _| {
                     let uri = env::var("SPACETIMEDB_URI")
                         .unwrap_or_else(|_| "https://maincloud.spacetimedb.com".to_string());
-                    let module_name =
-                        env::var("SPACETIME_DB_MODULE").unwrap_or_else(|_| "nova9".to_string());
+
+                    #[cfg(not(feature = "dev"))]
+                    let module_name = env::var("SPACETIME_DB_MODULE")
+                        .unwrap_or_else(|_| "nova9-staging".to_string());
+                    #[cfg(feature = "dev")]
+                    let module_name = "nova9";
 
                     let conn = DbConnection::builder()
                         .with_uri(uri)
