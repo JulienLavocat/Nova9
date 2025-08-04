@@ -4,5 +4,25 @@ on:
     branches:
       - staging
 jobs:
-  build:
-    runs-on:
+  publish-server:
+    name: "Publish server"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: install wasm-bindgen-cli
+        run: |
+          cargo install wasm-bindgen-cli
+      - name: Install SpacetimeDB
+        run: curl -sSf https://install.spacetimedb.com | sh
+      - name: Setup token
+        run: spacetime login --token ${{ secrets.SPACETIMEDB_ADMIN_TOKEN }}
+      - name: Publish server
+        run: spacetime publish -p server -y nova9-staging -c
+  # build-client:
+  #   runs-on: "ubuntu-latest"
+  #   name: Buiild client
+  #   steps:
+  #     - name: Install
