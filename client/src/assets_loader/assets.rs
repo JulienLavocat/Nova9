@@ -34,6 +34,24 @@ pub struct ModelAssets {
 }
 
 #[derive(Resource, AssetCollection, Default, Debug)]
+pub struct CollisionAssets {
+    #[asset(path = "colliders/ships/bomber_01_collision.glb#Mesh0/Primitive0")]
+    pub ship_bomber_01: Handle<Mesh>,
+    #[asset(path = "colliders/ships/station_01_collision.glb#Mesh0/Primitive0")]
+    pub ship_station_01: Handle<Mesh>,
+    #[asset(path = "colliders/ships/station_02_collision.glb#Mesh0/Primitive0")]
+    pub ship_station_02: Handle<Mesh>,
+    #[asset(path = "colliders/ships/station_03_collision.glb#Mesh0/Primitive0")]
+    pub ship_station_03: Handle<Mesh>,
+    #[asset(path = "colliders/ships/station_04_collision.glb#Mesh0/Primitive0")]
+    pub ship_station_04: Handle<Mesh>,
+    #[asset(path = "colliders/ships/station_05_collision.glb#Mesh0/Primitive0")]
+    pub ship_station_05: Handle<Mesh>,
+    #[asset(path = "colliders/ships/station_06_collision.glb#Mesh0/Primitive0")]
+    pub ship_station_06: Handle<Mesh>,
+}
+
+#[derive(Resource, AssetCollection, Default, Debug)]
 pub struct MaterialAssets {
     #[asset(key = "mats.base_01")]
     pub base_01: Handle<StandardMaterial>,

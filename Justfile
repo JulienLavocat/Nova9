@@ -1,7 +1,7 @@
 module := "nova9"
 
 client:
-    RUST_LOG="info,wgpu=error,naga=warn,client=trace" SPACETIMEDB_URI="https://stdb.jlavocat.eu" cargo run --bin client
+    RUST_LOG="info,wgpu=error,naga=warn,client=trace" SPACETIMEDB_URI="https://stdb.jlavocat.eu" cargo run --bin client --features dev
 
 server:
     spacetime publish -p server -y {{module}} -c

@@ -22,15 +22,15 @@ pub fn init(ctx: &ReducerContext) {
 
         mass: 1.0,
         thrust: 10000.0,
-        vertical_thrust: 500.0,
-        lateral_thrust: 500.0,
+        vertical_thrust: 1000.0,
+        lateral_thrust: 1000.0,
 
         linear_damping: 1.0,
         angular_damping: 1.0,
 
-        pitch_torque: 500.0,
-        yaw_torque: 500.0,
-        roll_torque: 500.0,
+        pitch_torque: 1500.0,
+        yaw_torque: 1500.0,
+        roll_torque: 2000.0,
     });
 
     ctx.db.stations().insert(Station {

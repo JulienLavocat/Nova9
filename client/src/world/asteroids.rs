@@ -1,3 +1,4 @@
+use avian3d::prelude::{Collider, RigidBody};
 use bevy::{platform::collections::HashMap, prelude::*};
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent};
 
@@ -62,11 +63,22 @@ fn spawn_asteroid(
             }
         };
 
+        let collider = match asteroid.asteroid_type {
+            0 => Collider::sphere(1.3),
+            1 => Collider::sphere(3.4),
+            2 => Collider::sphere(3.8),
+            3 => Collider::capsule(2.8, 4.6),
+            4 => Collider::cylinder(3.55, 4.5),
+            _ => Collider::sphere(1.0),
+        };
+
         let entity = commands
             .spawn((
                 Name::new(format!("Asteroid {}", asteroid.id)),
                 SceneRoot(model),
                 GameMaterial::Standard,
+                RigidBody::Static,
+                collider,
                 transform,
             ))
             .id();

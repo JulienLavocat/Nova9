@@ -3,7 +3,7 @@ use avian3d::{PhysicsPlugins, prelude::Gravity};
 use bevy::prelude::*;
 use bevy_enhanced_input::EnhancedInputPlugin;
 use bevy_flycam::{MovementSettings, NoCameraPlayerPlugin};
-use bevy_inspector_egui::bevy_egui::EguiPlugin;
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use materials::MaterialsPlugin;
 use player::PlayerPlugin;
 use shaders::ShadersPlugin;
@@ -42,7 +42,7 @@ fn main() -> AppExit {
         .init_state::<GameState>()
         .add_plugins(ShadersPlugin)
         .add_plugins(EguiPlugin::default())
-        // .add_plugins(WorldInspectorPlugin::default())
+        .add_plugins(WorldInspectorPlugin::default())
         .add_plugins((
             NoCameraPlayerPlugin,
             EnhancedInputPlugin,

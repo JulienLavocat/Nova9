@@ -1,9 +1,14 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use avian3d::prelude::{Collider, RigidBody};
 use bevy::{platform::collections::HashMap, prelude::*};
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent};
 
-use crate::{assets_loader::ModelAssets, bindings::Station as StationRow, materials::GameMaterial};
+use crate::{
+    assets_loader::{CollisionAssets, ModelAssets},
+    bindings::Station as StationRow,
+    materials::GameMaterial,
+};
 
 #[derive(Component, Debug, Clone)]
 pub struct Station {
@@ -46,6 +51,8 @@ fn spawn_stations(
     mut commands: Commands,
     mut registry: ResMut<StationsRegistry>,
     model_assets: Res<ModelAssets>,
+    collision_assets: Res<CollisionAssets>,
+    meshes: Res<Assets<Mesh>>,
 ) {
     for event in events.read() {
         debug!("Spawning station: {:?}", event.row);
@@ -59,22 +66,38 @@ fn spawn_stations(
                 },
                 Name::new(format!("Station {}", station.id)),
                 SceneRoot(model_assets.ship_station_01.clone()),
-                Transform::from_xyz(station.x, station.y, station.z),
+                Transform::from_xyz(station.x, station.y, station.z).with_scale(Vec3::splat(2.5)),
                 GameMaterial::Station,
+                RigidBody::Static,
+                get_station_part_collider(&meshes, &collision_assets, 0),
                 children![
-                    SceneRoot(model_assets.ship_station_02.clone()),
-                    SceneRoot(model_assets.ship_station_03.clone()),
+                    (
+                        SceneRoot(model_assets.ship_station_02.clone()),
+                        RigidBody::Static,
+                        get_station_part_collider(&meshes, &collision_assets, 1),
+                    ),
+                    (
+                        SceneRoot(model_assets.ship_station_03.clone()),
+                        RigidBody::Static,
+                        get_station_part_collider(&meshes, &collision_assets, 2),
+                    ),
                     (
                         SceneRoot(model_assets.ship_station_04.clone()),
-                        Transform::from_xyz(0.0, -115.5, 0.0)
+                        Transform::from_xyz(0.0, -115.5, 0.0),
+                        RigidBody::Static,
+                        get_station_part_collider(&meshes, &collision_assets, 3),
                     ),
                     (
                         SceneRoot(model_assets.ship_station_05.clone()),
-                        Transform::from_xyz(0.0, -228.9, 0.0)
+                        Transform::from_xyz(0.0, -228.9, 0.0),
+                        RigidBody::Static,
+                        get_station_part_collider(&meshes, &collision_assets, 4),
                     ),
                     (
                         SceneRoot(model_assets.ship_station_06.clone()),
-                        Transform::from_xyz(0.0, 0.0, 0.0)
+                        Transform::from_xyz(0.0, 0.0, 0.0),
+                        RigidBody::Static,
+                        get_station_part_collider(&meshes, &collision_assets, 5),
                     ),
                 ],
             ))
@@ -144,4 +167,24 @@ fn rotate_stations(mut query: Query<(&mut Transform, &Station)>, time: Res<Time>
         let t = (time.delta_secs() / remaining).clamp(0.0, 1.0);
         transform.rotation = current_rotation.slerp(target_rotation, t);
     }
+}
+
+fn get_station_part_collider(
+    meshes: &Res<Assets<Mesh>>,
+    collision_assets: &CollisionAssets,
+    part_id: i32,
+) -> Collider {
+    let collision_mesh_handle = match part_id {
+        0 => &collision_assets.ship_station_01,
+        1 => &collision_assets.ship_station_02,
+        2 => &collision_assets.ship_station_03,
+        3 => &collision_assets.ship_station_04,
+        4 => &collision_assets.ship_station_05,
+        5 => &collision_assets.ship_station_06,
+        _ => panic!("Unknown station part: {part_id}"),
+    };
+
+    let mesh = meshes.get(collision_mesh_handle).unwrap();
+
+    Collider::trimesh_from_mesh(mesh).unwrap()
 }

@@ -15,7 +15,7 @@ fn player_ready(ctx: &ReducerContext) {
         ship_id: ship.id,
         x: 0.0,
         y: 0.0,
-        z: 300.0,
+        z: 800.0,
         rot_x: 0.0,
         rot_y: 0.0,
         rot_z: 0.0,

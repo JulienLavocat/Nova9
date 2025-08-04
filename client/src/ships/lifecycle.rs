@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_spacetimedb::{DeleteEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
-    assets_loader::ModelAssets,
+    assets_loader::{CollisionAssets, ModelAssets},
     bindings::{Ship as ShipTable, ShipTypesTableAccess},
     materials::GameMaterial,
     ships::components::Ship,
@@ -27,6 +27,8 @@ fn spawn_ship(
     mut events: ReadInsertEvent<ShipTable>,
     mut ships: ResMut<ShipsRegistry>,
     models_assets: Res<ModelAssets>,
+    collision_assets: Res<CollisionAssets>,
+    meshes: Res<Assets<Mesh>>,
     stdb: SpacetimeDB,
 ) {
     for event in events.read() {
@@ -53,6 +55,19 @@ fn spawn_ship(
             ..Default::default()
         };
 
+        let mesh_handle = match ship.ship_type_id {
+            1 => collision_assets.ship_bomber_01.clone(),
+            _ => panic!("Unknown ship type: {}", ship.ship_type_id),
+        };
+
+        let mesh = meshes
+            .get(&mesh_handle)
+            .expect("Failed to get mesh for ship collider");
+        // I hate this
+        let mesh = mesh
+            .clone()
+            .rotated_by(Quat::from_rotation_y(-180.0_f32.to_radians()));
+
         let entity = commands
             .spawn((
                 Name::new(format!("Ship {}", ship.id)),
@@ -65,7 +80,7 @@ fn spawn_ship(
                 AngularDamping(ship_type.angular_damping),
                 ExternalTorque::default().with_persistence(false),
                 ExternalForce::default().with_persistence(false),
-                Collider::cuboid(5.0, 5.0, 5.0),
+                Collider::trimesh_from_mesh(&mesh).unwrap(),
                 Transform::default(),
                 children![
                     (

@@ -19,6 +19,7 @@ impl Plugin for AssetsLoaderPlugin {
         info!("Adding AssetsLoaderPlugin");
         app.init_resource::<TextureAssets>()
             .init_resource::<ModelAssets>()
+            .init_resource::<CollisionAssets>()
             .init_resource::<MaterialAssets>()
             .add_plugins(RonAssetPlugin::<CustomDynamicAssetCollection>::new(&[
                 "manifest.ron",
@@ -30,6 +31,7 @@ impl Plugin for AssetsLoaderPlugin {
                     .with_dynamic_assets_file::<CustomDynamicAssetCollection>(
                         "materials.manifest.ron",
                     )
+                    .load_collection::<CollisionAssets>()
                     .load_collection::<ModelAssets>()
                     .load_collection::<TextureAssets>()
                     .load_collection::<MaterialAssets>(),
