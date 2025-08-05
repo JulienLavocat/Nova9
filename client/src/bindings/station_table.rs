@@ -7,42 +7,42 @@
 use super::station_type::Station;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `stations`.
+/// Table handle for the table `station`.
 ///
-/// Obtain a handle from the [`StationsTableAccess::stations`] method on [`super::RemoteTables`],
-/// like `ctx.db.stations()`.
+/// Obtain a handle from the [`StationTableAccess::station`] method on [`super::RemoteTables`],
+/// like `ctx.db.station()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.stations().on_insert(...)`.
-pub struct StationsTableHandle<'ctx> {
+/// like `ctx.db.station().on_insert(...)`.
+pub struct StationTableHandle<'ctx> {
     imp: __sdk::TableHandle<Station>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `stations`.
+/// Extension trait for access to the table `station`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait StationsTableAccess {
+pub trait StationTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`StationsTableHandle`], which mediates access to the table `stations`.
-    fn stations(&self) -> StationsTableHandle<'_>;
+    /// Obtain a [`StationTableHandle`], which mediates access to the table `station`.
+    fn station(&self) -> StationTableHandle<'_>;
 }
 
-impl StationsTableAccess for super::RemoteTables {
-    fn stations(&self) -> StationsTableHandle<'_> {
-        StationsTableHandle {
-            imp: self.imp.get_table::<Station>("stations"),
+impl StationTableAccess for super::RemoteTables {
+    fn station(&self) -> StationTableHandle<'_> {
+        StationTableHandle {
+            imp: self.imp.get_table::<Station>("station"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct StationsInsertCallbackId(__sdk::CallbackId);
-pub struct StationsDeleteCallbackId(__sdk::CallbackId);
+pub struct StationInsertCallbackId(__sdk::CallbackId);
+pub struct StationDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for StationsTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for StationTableHandle<'ctx> {
     type Row = Station;
     type EventContext = super::EventContext;
 
@@ -53,51 +53,51 @@ impl<'ctx> __sdk::Table for StationsTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = StationsInsertCallbackId;
+    type InsertCallbackId = StationInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> StationsInsertCallbackId {
-        StationsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> StationInsertCallbackId {
+        StationInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: StationsInsertCallbackId) {
+    fn remove_on_insert(&self, callback: StationInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = StationsDeleteCallbackId;
+    type DeleteCallbackId = StationDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> StationsDeleteCallbackId {
-        StationsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> StationDeleteCallbackId {
+        StationDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: StationsDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: StationDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<Station>("stations");
+    let _table = client_cache.get_or_make_table::<Station>("station");
     _table.add_unique_constraint::<u64>("id", |row| &row.id);
 }
-pub struct StationsUpdateCallbackId(__sdk::CallbackId);
+pub struct StationUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for StationsTableHandle<'ctx> {
-    type UpdateCallbackId = StationsUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for StationTableHandle<'ctx> {
+    type UpdateCallbackId = StationUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> StationsUpdateCallbackId {
-        StationsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> StationUpdateCallbackId {
+        StationUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: StationsUpdateCallbackId) {
+    fn remove_on_update(&self, callback: StationUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
@@ -113,29 +113,29 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `id` unique index on the table `stations`,
+/// Access to the `id` unique index on the table `station`,
 /// which allows point queries on the field of the same name
-/// via the [`StationsIdUnique::find`] method.
+/// via the [`StationIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.stations().id().find(...)`.
-pub struct StationsIdUnique<'ctx> {
+/// like `ctx.db.station().id().find(...)`.
+pub struct StationIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<Station, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> StationsTableHandle<'ctx> {
-    /// Get a handle on the `id` unique index on the table `stations`.
-    pub fn id(&self) -> StationsIdUnique<'ctx> {
-        StationsIdUnique {
+impl<'ctx> StationTableHandle<'ctx> {
+    /// Get a handle on the `id` unique index on the table `station`.
+    pub fn id(&self) -> StationIdUnique<'ctx> {
+        StationIdUnique {
             imp: self.imp.get_unique_constraint::<u64>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> StationsIdUnique<'ctx> {
+impl<'ctx> StationIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u64) -> Option<Station> {

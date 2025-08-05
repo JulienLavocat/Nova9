@@ -7,42 +7,42 @@
 use super::ship_location_type::ShipLocation;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `ship_locations`.
+/// Table handle for the table `ship_location`.
 ///
-/// Obtain a handle from the [`ShipLocationsTableAccess::ship_locations`] method on [`super::RemoteTables`],
-/// like `ctx.db.ship_locations()`.
+/// Obtain a handle from the [`ShipLocationTableAccess::ship_location`] method on [`super::RemoteTables`],
+/// like `ctx.db.ship_location()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ship_locations().on_insert(...)`.
-pub struct ShipLocationsTableHandle<'ctx> {
+/// like `ctx.db.ship_location().on_insert(...)`.
+pub struct ShipLocationTableHandle<'ctx> {
     imp: __sdk::TableHandle<ShipLocation>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `ship_locations`.
+/// Extension trait for access to the table `ship_location`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait ShipLocationsTableAccess {
+pub trait ShipLocationTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`ShipLocationsTableHandle`], which mediates access to the table `ship_locations`.
-    fn ship_locations(&self) -> ShipLocationsTableHandle<'_>;
+    /// Obtain a [`ShipLocationTableHandle`], which mediates access to the table `ship_location`.
+    fn ship_location(&self) -> ShipLocationTableHandle<'_>;
 }
 
-impl ShipLocationsTableAccess for super::RemoteTables {
-    fn ship_locations(&self) -> ShipLocationsTableHandle<'_> {
-        ShipLocationsTableHandle {
-            imp: self.imp.get_table::<ShipLocation>("ship_locations"),
+impl ShipLocationTableAccess for super::RemoteTables {
+    fn ship_location(&self) -> ShipLocationTableHandle<'_> {
+        ShipLocationTableHandle {
+            imp: self.imp.get_table::<ShipLocation>("ship_location"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct ShipLocationsInsertCallbackId(__sdk::CallbackId);
-pub struct ShipLocationsDeleteCallbackId(__sdk::CallbackId);
+pub struct ShipLocationInsertCallbackId(__sdk::CallbackId);
+pub struct ShipLocationDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for ShipLocationsTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for ShipLocationTableHandle<'ctx> {
     type Row = ShipLocation;
     type EventContext = super::EventContext;
 
@@ -53,51 +53,51 @@ impl<'ctx> __sdk::Table for ShipLocationsTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = ShipLocationsInsertCallbackId;
+    type InsertCallbackId = ShipLocationInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> ShipLocationsInsertCallbackId {
-        ShipLocationsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> ShipLocationInsertCallbackId {
+        ShipLocationInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: ShipLocationsInsertCallbackId) {
+    fn remove_on_insert(&self, callback: ShipLocationInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = ShipLocationsDeleteCallbackId;
+    type DeleteCallbackId = ShipLocationDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> ShipLocationsDeleteCallbackId {
-        ShipLocationsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> ShipLocationDeleteCallbackId {
+        ShipLocationDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: ShipLocationsDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: ShipLocationDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<ShipLocation>("ship_locations");
+    let _table = client_cache.get_or_make_table::<ShipLocation>("ship_location");
     _table.add_unique_constraint::<u64>("ship_id", |row| &row.ship_id);
 }
-pub struct ShipLocationsUpdateCallbackId(__sdk::CallbackId);
+pub struct ShipLocationUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for ShipLocationsTableHandle<'ctx> {
-    type UpdateCallbackId = ShipLocationsUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for ShipLocationTableHandle<'ctx> {
+    type UpdateCallbackId = ShipLocationUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> ShipLocationsUpdateCallbackId {
-        ShipLocationsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> ShipLocationUpdateCallbackId {
+        ShipLocationUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: ShipLocationsUpdateCallbackId) {
+    fn remove_on_update(&self, callback: ShipLocationUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
@@ -113,29 +113,29 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `ship_id` unique index on the table `ship_locations`,
+/// Access to the `ship_id` unique index on the table `ship_location`,
 /// which allows point queries on the field of the same name
-/// via the [`ShipLocationsShipIdUnique::find`] method.
+/// via the [`ShipLocationShipIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ship_locations().ship_id().find(...)`.
-pub struct ShipLocationsShipIdUnique<'ctx> {
+/// like `ctx.db.ship_location().ship_id().find(...)`.
+pub struct ShipLocationShipIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<ShipLocation, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> ShipLocationsTableHandle<'ctx> {
-    /// Get a handle on the `ship_id` unique index on the table `ship_locations`.
-    pub fn ship_id(&self) -> ShipLocationsShipIdUnique<'ctx> {
-        ShipLocationsShipIdUnique {
+impl<'ctx> ShipLocationTableHandle<'ctx> {
+    /// Get a handle on the `ship_id` unique index on the table `ship_location`.
+    pub fn ship_id(&self) -> ShipLocationShipIdUnique<'ctx> {
+        ShipLocationShipIdUnique {
             imp: self.imp.get_unique_constraint::<u64>("ship_id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> ShipLocationsShipIdUnique<'ctx> {
+impl<'ctx> ShipLocationShipIdUnique<'ctx> {
     /// Find the subscribed row whose `ship_id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u64) -> Option<ShipLocation> {

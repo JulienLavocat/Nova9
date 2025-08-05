@@ -7,42 +7,42 @@
 use super::asteroid_type::Asteroid;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `asteroids`.
+/// Table handle for the table `asteroid`.
 ///
-/// Obtain a handle from the [`AsteroidsTableAccess::asteroids`] method on [`super::RemoteTables`],
-/// like `ctx.db.asteroids()`.
+/// Obtain a handle from the [`AsteroidTableAccess::asteroid`] method on [`super::RemoteTables`],
+/// like `ctx.db.asteroid()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.asteroids().on_insert(...)`.
-pub struct AsteroidsTableHandle<'ctx> {
+/// like `ctx.db.asteroid().on_insert(...)`.
+pub struct AsteroidTableHandle<'ctx> {
     imp: __sdk::TableHandle<Asteroid>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `asteroids`.
+/// Extension trait for access to the table `asteroid`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait AsteroidsTableAccess {
+pub trait AsteroidTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`AsteroidsTableHandle`], which mediates access to the table `asteroids`.
-    fn asteroids(&self) -> AsteroidsTableHandle<'_>;
+    /// Obtain a [`AsteroidTableHandle`], which mediates access to the table `asteroid`.
+    fn asteroid(&self) -> AsteroidTableHandle<'_>;
 }
 
-impl AsteroidsTableAccess for super::RemoteTables {
-    fn asteroids(&self) -> AsteroidsTableHandle<'_> {
-        AsteroidsTableHandle {
-            imp: self.imp.get_table::<Asteroid>("asteroids"),
+impl AsteroidTableAccess for super::RemoteTables {
+    fn asteroid(&self) -> AsteroidTableHandle<'_> {
+        AsteroidTableHandle {
+            imp: self.imp.get_table::<Asteroid>("asteroid"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct AsteroidsInsertCallbackId(__sdk::CallbackId);
-pub struct AsteroidsDeleteCallbackId(__sdk::CallbackId);
+pub struct AsteroidInsertCallbackId(__sdk::CallbackId);
+pub struct AsteroidDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for AsteroidsTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for AsteroidTableHandle<'ctx> {
     type Row = Asteroid;
     type EventContext = super::EventContext;
 
@@ -53,51 +53,51 @@ impl<'ctx> __sdk::Table for AsteroidsTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = AsteroidsInsertCallbackId;
+    type InsertCallbackId = AsteroidInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> AsteroidsInsertCallbackId {
-        AsteroidsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> AsteroidInsertCallbackId {
+        AsteroidInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: AsteroidsInsertCallbackId) {
+    fn remove_on_insert(&self, callback: AsteroidInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = AsteroidsDeleteCallbackId;
+    type DeleteCallbackId = AsteroidDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> AsteroidsDeleteCallbackId {
-        AsteroidsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> AsteroidDeleteCallbackId {
+        AsteroidDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: AsteroidsDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: AsteroidDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<Asteroid>("asteroids");
+    let _table = client_cache.get_or_make_table::<Asteroid>("asteroid");
     _table.add_unique_constraint::<u64>("id", |row| &row.id);
 }
-pub struct AsteroidsUpdateCallbackId(__sdk::CallbackId);
+pub struct AsteroidUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for AsteroidsTableHandle<'ctx> {
-    type UpdateCallbackId = AsteroidsUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for AsteroidTableHandle<'ctx> {
+    type UpdateCallbackId = AsteroidUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> AsteroidsUpdateCallbackId {
-        AsteroidsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> AsteroidUpdateCallbackId {
+        AsteroidUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: AsteroidsUpdateCallbackId) {
+    fn remove_on_update(&self, callback: AsteroidUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
@@ -113,29 +113,29 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `id` unique index on the table `asteroids`,
+/// Access to the `id` unique index on the table `asteroid`,
 /// which allows point queries on the field of the same name
-/// via the [`AsteroidsIdUnique::find`] method.
+/// via the [`AsteroidIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.asteroids().id().find(...)`.
-pub struct AsteroidsIdUnique<'ctx> {
+/// like `ctx.db.asteroid().id().find(...)`.
+pub struct AsteroidIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<Asteroid, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> AsteroidsTableHandle<'ctx> {
-    /// Get a handle on the `id` unique index on the table `asteroids`.
-    pub fn id(&self) -> AsteroidsIdUnique<'ctx> {
-        AsteroidsIdUnique {
+impl<'ctx> AsteroidTableHandle<'ctx> {
+    /// Get a handle on the `id` unique index on the table `asteroid`.
+    pub fn id(&self) -> AsteroidIdUnique<'ctx> {
+        AsteroidIdUnique {
             imp: self.imp.get_unique_constraint::<u64>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> AsteroidsIdUnique<'ctx> {
+impl<'ctx> AsteroidIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u64) -> Option<Asteroid> {

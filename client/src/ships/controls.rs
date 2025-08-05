@@ -8,7 +8,7 @@ use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
     GameState,
-    bindings::{ShipPilot, ShipTypesTableAccess, ShipsTableAccess, player_move_ship},
+    bindings::{ShipPilot, ShipTableAccess, ShipTypeTableAccess, player_move_ship},
     player::PlayerCamera,
     ships::components::ControlledShip,
     spacetimedb::SpacetimeDB,
@@ -163,13 +163,8 @@ fn on_ship_pilot_inserted(
                 ]),
             ));
 
-            let ship = stdb.db().ships().id().find(&ship.ship_id).unwrap();
-            let ship_data = stdb
-                .db()
-                .ship_types()
-                .id()
-                .find(&ship.ship_type_id)
-                .unwrap();
+            let ship = stdb.db().ship().id().find(&ship.ship_id).unwrap();
+            let ship_data = stdb.db().ship_type().id().find(&ship.ship_type_id).unwrap();
 
             commands.entity(camera_entity).insert((
                 ChildOf(ship_details.entity()),
@@ -260,7 +255,7 @@ fn apply_movement(
 
     let (mut external_torque, mut external_force, transform, flight_controls, ship) =
         query.into_inner();
-    let ship_data = stdb.db().ship_types().id().find(&ship.ship_type).unwrap();
+    let ship_data = stdb.db().ship_type().id().find(&ship.ship_type).unwrap();
 
     let roll_torque =
         transform.back() * flight_controls.roll * ship_data.roll_torque * time.delta_secs();

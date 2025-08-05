@@ -11,7 +11,7 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 pub struct Ship {
     pub id: u64,
     pub ship_type_id: u64,
-    pub owner_id: __sdk::Identity,
+    pub owner_id: u64,
 }
 
 impl __sdk::InModule for Ship {

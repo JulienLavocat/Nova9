@@ -7,42 +7,42 @@
 use super::ship_type::Ship;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `ships`.
+/// Table handle for the table `ship`.
 ///
-/// Obtain a handle from the [`ShipsTableAccess::ships`] method on [`super::RemoteTables`],
-/// like `ctx.db.ships()`.
+/// Obtain a handle from the [`ShipTableAccess::ship`] method on [`super::RemoteTables`],
+/// like `ctx.db.ship()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ships().on_insert(...)`.
-pub struct ShipsTableHandle<'ctx> {
+/// like `ctx.db.ship().on_insert(...)`.
+pub struct ShipTableHandle<'ctx> {
     imp: __sdk::TableHandle<Ship>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `ships`.
+/// Extension trait for access to the table `ship`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait ShipsTableAccess {
+pub trait ShipTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`ShipsTableHandle`], which mediates access to the table `ships`.
-    fn ships(&self) -> ShipsTableHandle<'_>;
+    /// Obtain a [`ShipTableHandle`], which mediates access to the table `ship`.
+    fn ship(&self) -> ShipTableHandle<'_>;
 }
 
-impl ShipsTableAccess for super::RemoteTables {
-    fn ships(&self) -> ShipsTableHandle<'_> {
-        ShipsTableHandle {
-            imp: self.imp.get_table::<Ship>("ships"),
+impl ShipTableAccess for super::RemoteTables {
+    fn ship(&self) -> ShipTableHandle<'_> {
+        ShipTableHandle {
+            imp: self.imp.get_table::<Ship>("ship"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct ShipsInsertCallbackId(__sdk::CallbackId);
-pub struct ShipsDeleteCallbackId(__sdk::CallbackId);
+pub struct ShipInsertCallbackId(__sdk::CallbackId);
+pub struct ShipDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for ShipsTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for ShipTableHandle<'ctx> {
     type Row = Ship;
     type EventContext = super::EventContext;
 
@@ -53,51 +53,51 @@ impl<'ctx> __sdk::Table for ShipsTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = ShipsInsertCallbackId;
+    type InsertCallbackId = ShipInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> ShipsInsertCallbackId {
-        ShipsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> ShipInsertCallbackId {
+        ShipInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: ShipsInsertCallbackId) {
+    fn remove_on_insert(&self, callback: ShipInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = ShipsDeleteCallbackId;
+    type DeleteCallbackId = ShipDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> ShipsDeleteCallbackId {
-        ShipsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> ShipDeleteCallbackId {
+        ShipDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: ShipsDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: ShipDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<Ship>("ships");
+    let _table = client_cache.get_or_make_table::<Ship>("ship");
     _table.add_unique_constraint::<u64>("id", |row| &row.id);
 }
-pub struct ShipsUpdateCallbackId(__sdk::CallbackId);
+pub struct ShipUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for ShipsTableHandle<'ctx> {
-    type UpdateCallbackId = ShipsUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for ShipTableHandle<'ctx> {
+    type UpdateCallbackId = ShipUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> ShipsUpdateCallbackId {
-        ShipsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> ShipUpdateCallbackId {
+        ShipUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: ShipsUpdateCallbackId) {
+    fn remove_on_update(&self, callback: ShipUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
@@ -113,29 +113,29 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `id` unique index on the table `ships`,
+/// Access to the `id` unique index on the table `ship`,
 /// which allows point queries on the field of the same name
-/// via the [`ShipsIdUnique::find`] method.
+/// via the [`ShipIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ships().id().find(...)`.
-pub struct ShipsIdUnique<'ctx> {
+/// like `ctx.db.ship().id().find(...)`.
+pub struct ShipIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<Ship, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> ShipsTableHandle<'ctx> {
-    /// Get a handle on the `id` unique index on the table `ships`.
-    pub fn id(&self) -> ShipsIdUnique<'ctx> {
-        ShipsIdUnique {
+impl<'ctx> ShipTableHandle<'ctx> {
+    /// Get a handle on the `id` unique index on the table `ship`.
+    pub fn id(&self) -> ShipIdUnique<'ctx> {
+        ShipIdUnique {
             imp: self.imp.get_unique_constraint::<u64>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> ShipsIdUnique<'ctx> {
+impl<'ctx> ShipIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u64) -> Option<Ship> {

@@ -7,42 +7,42 @@
 use super::ship_pilot_type::ShipPilot;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `ship_pilots`.
+/// Table handle for the table `ship_pilot`.
 ///
-/// Obtain a handle from the [`ShipPilotsTableAccess::ship_pilots`] method on [`super::RemoteTables`],
-/// like `ctx.db.ship_pilots()`.
+/// Obtain a handle from the [`ShipPilotTableAccess::ship_pilot`] method on [`super::RemoteTables`],
+/// like `ctx.db.ship_pilot()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ship_pilots().on_insert(...)`.
-pub struct ShipPilotsTableHandle<'ctx> {
+/// like `ctx.db.ship_pilot().on_insert(...)`.
+pub struct ShipPilotTableHandle<'ctx> {
     imp: __sdk::TableHandle<ShipPilot>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `ship_pilots`.
+/// Extension trait for access to the table `ship_pilot`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait ShipPilotsTableAccess {
+pub trait ShipPilotTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`ShipPilotsTableHandle`], which mediates access to the table `ship_pilots`.
-    fn ship_pilots(&self) -> ShipPilotsTableHandle<'_>;
+    /// Obtain a [`ShipPilotTableHandle`], which mediates access to the table `ship_pilot`.
+    fn ship_pilot(&self) -> ShipPilotTableHandle<'_>;
 }
 
-impl ShipPilotsTableAccess for super::RemoteTables {
-    fn ship_pilots(&self) -> ShipPilotsTableHandle<'_> {
-        ShipPilotsTableHandle {
-            imp: self.imp.get_table::<ShipPilot>("ship_pilots"),
+impl ShipPilotTableAccess for super::RemoteTables {
+    fn ship_pilot(&self) -> ShipPilotTableHandle<'_> {
+        ShipPilotTableHandle {
+            imp: self.imp.get_table::<ShipPilot>("ship_pilot"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct ShipPilotsInsertCallbackId(__sdk::CallbackId);
-pub struct ShipPilotsDeleteCallbackId(__sdk::CallbackId);
+pub struct ShipPilotInsertCallbackId(__sdk::CallbackId);
+pub struct ShipPilotDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for ShipPilotsTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for ShipPilotTableHandle<'ctx> {
     type Row = ShipPilot;
     type EventContext = super::EventContext;
 
@@ -53,52 +53,52 @@ impl<'ctx> __sdk::Table for ShipPilotsTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = ShipPilotsInsertCallbackId;
+    type InsertCallbackId = ShipPilotInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> ShipPilotsInsertCallbackId {
-        ShipPilotsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> ShipPilotInsertCallbackId {
+        ShipPilotInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: ShipPilotsInsertCallbackId) {
+    fn remove_on_insert(&self, callback: ShipPilotInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = ShipPilotsDeleteCallbackId;
+    type DeleteCallbackId = ShipPilotDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> ShipPilotsDeleteCallbackId {
-        ShipPilotsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> ShipPilotDeleteCallbackId {
+        ShipPilotDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: ShipPilotsDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: ShipPilotDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<ShipPilot>("ship_pilots");
+    let _table = client_cache.get_or_make_table::<ShipPilot>("ship_pilot");
     _table.add_unique_constraint::<u64>("ship_id", |row| &row.ship_id);
     _table.add_unique_constraint::<__sdk::Identity>("player_id", |row| &row.player_id);
 }
-pub struct ShipPilotsUpdateCallbackId(__sdk::CallbackId);
+pub struct ShipPilotUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for ShipPilotsTableHandle<'ctx> {
-    type UpdateCallbackId = ShipPilotsUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for ShipPilotTableHandle<'ctx> {
+    type UpdateCallbackId = ShipPilotUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> ShipPilotsUpdateCallbackId {
-        ShipPilotsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> ShipPilotUpdateCallbackId {
+        ShipPilotUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: ShipPilotsUpdateCallbackId) {
+    fn remove_on_update(&self, callback: ShipPilotUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
@@ -114,29 +114,29 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `ship_id` unique index on the table `ship_pilots`,
+/// Access to the `ship_id` unique index on the table `ship_pilot`,
 /// which allows point queries on the field of the same name
-/// via the [`ShipPilotsShipIdUnique::find`] method.
+/// via the [`ShipPilotShipIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ship_pilots().ship_id().find(...)`.
-pub struct ShipPilotsShipIdUnique<'ctx> {
+/// like `ctx.db.ship_pilot().ship_id().find(...)`.
+pub struct ShipPilotShipIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<ShipPilot, u64>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> ShipPilotsTableHandle<'ctx> {
-    /// Get a handle on the `ship_id` unique index on the table `ship_pilots`.
-    pub fn ship_id(&self) -> ShipPilotsShipIdUnique<'ctx> {
-        ShipPilotsShipIdUnique {
+impl<'ctx> ShipPilotTableHandle<'ctx> {
+    /// Get a handle on the `ship_id` unique index on the table `ship_pilot`.
+    pub fn ship_id(&self) -> ShipPilotShipIdUnique<'ctx> {
+        ShipPilotShipIdUnique {
             imp: self.imp.get_unique_constraint::<u64>("ship_id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> ShipPilotsShipIdUnique<'ctx> {
+impl<'ctx> ShipPilotShipIdUnique<'ctx> {
     /// Find the subscribed row whose `ship_id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &u64) -> Option<ShipPilot> {
@@ -144,22 +144,22 @@ impl<'ctx> ShipPilotsShipIdUnique<'ctx> {
     }
 }
 
-/// Access to the `player_id` unique index on the table `ship_pilots`,
+/// Access to the `player_id` unique index on the table `ship_pilot`,
 /// which allows point queries on the field of the same name
-/// via the [`ShipPilotsPlayerIdUnique::find`] method.
+/// via the [`ShipPilotPlayerIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.ship_pilots().player_id().find(...)`.
-pub struct ShipPilotsPlayerIdUnique<'ctx> {
+/// like `ctx.db.ship_pilot().player_id().find(...)`.
+pub struct ShipPilotPlayerIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<ShipPilot, __sdk::Identity>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> ShipPilotsTableHandle<'ctx> {
-    /// Get a handle on the `player_id` unique index on the table `ship_pilots`.
-    pub fn player_id(&self) -> ShipPilotsPlayerIdUnique<'ctx> {
-        ShipPilotsPlayerIdUnique {
+impl<'ctx> ShipPilotTableHandle<'ctx> {
+    /// Get a handle on the `player_id` unique index on the table `ship_pilot`.
+    pub fn player_id(&self) -> ShipPilotPlayerIdUnique<'ctx> {
+        ShipPilotPlayerIdUnique {
             imp: self
                 .imp
                 .get_unique_constraint::<__sdk::Identity>("player_id"),
@@ -168,7 +168,7 @@ impl<'ctx> ShipPilotsTableHandle<'ctx> {
     }
 }
 
-impl<'ctx> ShipPilotsPlayerIdUnique<'ctx> {
+impl<'ctx> ShipPilotPlayerIdUnique<'ctx> {
     /// Find the subscribed row whose `player_id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &__sdk::Identity) -> Option<ShipPilot> {

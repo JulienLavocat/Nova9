@@ -6,7 +6,7 @@ use bevy_spacetimedb::{DeleteEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
     assets_loader::{CollisionAssets, ModelAssets},
-    bindings::{Ship as ShipTable, ShipTypesTableAccess},
+    bindings::{Ship as ShipTable, ShipTypeTableAccess},
     materials::GameMaterial,
     ships::components::Ship,
     spacetimedb::SpacetimeDB,
@@ -36,12 +36,7 @@ fn spawn_ship(
 
         debug!("Spawning ship: {:?}", ship);
 
-        let ship_type = stdb
-            .db()
-            .ship_types()
-            .id()
-            .find(&ship.ship_type_id)
-            .unwrap();
+        let ship_type = stdb.db().ship_type().id().find(&ship.ship_type_id).unwrap();
         let model = match ship.ship_type_id {
             1 => &models_assets.ship_bomber_01,
             _ => panic!("Unknown ship type: {}", ship.ship_type_id),

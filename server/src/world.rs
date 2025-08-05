@@ -1,8 +1,10 @@
 use std::{f32::consts::TAU, ops::Add};
 
-use spacetimedb::{reducer, table, ScheduleAt, Table};
+use log::debug;
+use spacetimedb::{reducer, table, ScheduleAt};
+use spacetimedsl::dsl;
 
-use crate::tables::{stations, Station};
+use crate::tables::{GetAllStationRows, UpdateStationRowById};
 
 #[table(name = station_rotation_update, scheduled(world_update_stations_rotation))]
 pub struct StationRotationUpdate {
@@ -26,6 +28,9 @@ pub fn world_update_stations_rotation(
     ctx: &spacetimedb::ReducerContext,
     update: StationRotationUpdate,
 ) {
+    debug!("Updating station rotations at {:?}", ctx.timestamp);
+    let dsl = dsl(ctx);
+
     let update_interval = match update.scheduled_at {
         ScheduleAt::Interval(interval) => interval.to_duration().unwrap(),
         ScheduleAt::Time(_) => panic!("Station rotation update should be scheduled as an interval"),
@@ -38,15 +43,14 @@ pub fn world_update_stations_rotation(
         .add(update_interval)
         .as_millis();
 
-    for station in ctx.db.stations().iter() {
-        let target_angle = (station.target_angle
-            + station.rotation_speed * update_interval.as_secs_f32())
+    for mut station in dsl.get_all_stations() {
+        let target_angle = (station.get_target_angle()
+            + station.get_rotation_speed() * update_interval.as_secs_f32())
         .rem_euclid(TAU);
 
-        ctx.db.stations().id().update(Station {
-            target_angle,
-            reach_angle_at,
-            ..station
-        });
+        station.set_target_angle(target_angle);
+        station.set_reach_angle_at(reach_angle_at);
+        dsl.update_station_by_id(station)
+            .expect("Failed to update station rotation");
     }
 }

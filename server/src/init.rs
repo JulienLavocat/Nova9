@@ -1,9 +1,10 @@
 use std::{f32::consts::TAU, time::Duration};
 
 use spacetimedb::{reducer, ReducerContext, Table};
+use spacetimedsl::dsl;
 
 use crate::{
-    tables::{asteroids, ship_types, stations, Asteroid, ShipType, Station},
+    tables::{CreateAsteroidRow, CreateShipTypeRow, CreateStationRow},
     world::{station_rotation_update, StationRotationUpdate},
 };
 
@@ -12,41 +13,31 @@ const STATIONS_ROTATION_SPEED: f32 = 0.01;
 
 #[reducer(init)]
 pub fn init(ctx: &ReducerContext) {
-    ctx.db.ship_types().insert(ShipType {
-        id: 0,
-        name: "Fighter".to_string(),
+    let dsl = dsl(ctx);
 
-        camera_offset_x: 0.0,
-        camera_offset_y: 10.0,
-        camera_offset_z: 40.0,
+    dsl.create_ship_type(
+        "Fighter", // Name
+        0.0, 10.0, 40.0, // Camera offsets
+        1.0,  // Mass
+        1.0, 1.0, // Damping values
+        10000.0, 1000.0, 1000.0, // Thrust values
+        1500.0, 1500.0, 2000.0, // Torque values
+    )
+    .unwrap();
 
-        mass: 1.0,
-        thrust: 10000.0,
-        vertical_thrust: 1000.0,
-        lateral_thrust: 1000.0,
-
-        linear_damping: 1.0,
-        angular_damping: 1.0,
-
-        pitch_torque: 1500.0,
-        yaw_torque: 1500.0,
-        roll_torque: 2000.0,
-    });
-
-    ctx.db.stations().insert(Station {
-        id: 0,
-        name: "Station Alpha".to_string(),
-        x: 0.0,
-        y: 0.0,
-        z: 0.0,
-        target_angle: 0.0,
-        rotation_speed: STATIONS_ROTATION_SPEED,
-        reach_angle_at: ctx
-            .timestamp
+    dsl.create_station(
+        "Station Alpha",
+        0.0,
+        0.0,
+        0.0,
+        STATIONS_ROTATION_SPEED,
+        0.0,
+        ctx.timestamp
             .to_duration_since_unix_epoch()
             .unwrap()
             .as_millis(),
-    });
+    )
+    .unwrap();
 
     let center_x = 0.0;
     let center_y = 0.0;
@@ -56,18 +47,18 @@ pub fn init(ctx: &ReducerContext) {
     for i in 0..number_of_asteroids {
         let angle = i as f32 / number_of_asteroids as f32 * TAU;
 
-        ctx.db.asteroids().insert(Asteroid {
-            id: 0,
-            pos_x: center_x + radius * angle.cos(),
-            pos_y: center_y,
-            pos_z: center_z + radius * angle.sin(),
-            rot_x: 0.0,
-            rot_y: 0.0,
-            rot_z: 0.0,
-            rot_w: 1.0,
-            asteroid_type: (i % 5) as u8,
-            scale: 10.0,
-        });
+        dsl.create_asteroid(
+            center_x + radius * angle.cos(),
+            center_y,
+            center_z + radius * angle.sin(),
+            0.0,           // rot_x
+            0.0,           // rot_y
+            0.0,           // rot_z
+            1.0,           // rot_w
+            (i % 5) as u8, // asteroid_type
+            10.0,          // scale
+        )
+        .unwrap();
     }
 
     ctx.db

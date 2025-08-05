@@ -10,8 +10,8 @@ use bevy_spacetimedb::{
 use crate::{
     GameState,
     bindings::{
-        AsteroidsTableAccess, DbConnection, ShipLocationsTableAccess, ShipPilotsTableAccess,
-        ShipTypesTableAccess, ShipsTableAccess, StationsTableAccess,
+        AsteroidTableAccess, DbConnection, ShipLocationTableAccess, ShipPilotTableAccess,
+        ShipTableAccess, ShipTypeTableAccess, StationTableAccess,
     },
 };
 
@@ -63,12 +63,12 @@ impl Plugin for SpacetimeDbPlugin {
                 })
                 .with_events(|plugin, app, db, _| {
                     tables!(
-                        stations,
-                        ship_types,
-                        ships,
-                        ship_pilots,
-                        asteroids,
-                        ship_locations
+                        station,
+                        ship_type,
+                        ship,
+                        ship_pilot,
+                        asteroid,
+                        ship_location
                     );
 
                     let (send, recv) = std::sync::mpsc::channel();
@@ -126,7 +126,7 @@ fn load_static_data(stdb: SpacetimeDB, sender: Res<StaticDataLoadedSender>) {
             sender.send(StaticDataLoadedEvent {}).unwrap();
         })
         .on_error(|_, err| panic!("Static data loading error: {err}"))
-        .subscribe(["SELECT * FROM ship_types"]);
+        .subscribe(["SELECT * FROM ship_type"]);
 }
 
 fn on_static_data_loaded(
