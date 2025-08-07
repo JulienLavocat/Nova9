@@ -1,4 +1,5 @@
 mod asteroid_table;
+mod player_location;
 mod player_table;
 mod ship_location_table;
 mod ship_pilot_table;
@@ -7,6 +8,7 @@ mod ship_type_table;
 mod station_table;
 
 pub use asteroid_table::*;
+pub use player_location::*;
 pub use player_table::*;
 pub use ship_location_table::*;
 pub use ship_pilot_table::*;

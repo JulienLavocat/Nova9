@@ -2,12 +2,11 @@ use assets_loader::AssetsLoaderPlugin;
 use avian3d::{PhysicsPlugins, prelude::Gravity};
 use bevy::{prelude::*, window::WindowMode};
 use bevy_enhanced_input::EnhancedInputPlugin;
-use bevy_flycam::{MovementSettings, NoCameraPlayerPlugin};
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 #[cfg(feature = "dev")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use local_player::LocalPlayerPlugin;
 use materials::MaterialsPlugin;
-use player::PlayerPlugin;
 use shaders::ShadersPlugin;
 use ships::ShipsPlugin;
 use spacetimedb::SpacetimeDbPlugin;
@@ -15,8 +14,8 @@ use world::WorldPlugin;
 
 mod assets_loader;
 mod bindings;
+mod local_player;
 mod materials;
-mod player;
 mod shaders;
 mod ships;
 mod spacetimedb;
@@ -54,7 +53,6 @@ fn main() -> AppExit {
     .add_plugins(ShadersPlugin)
     .add_plugins(EguiPlugin::default())
     .add_plugins((
-        NoCameraPlayerPlugin,
         EnhancedInputPlugin,
         PhysicsPlugins::default(),
         // PhysicsDebugPlugin::default(),
@@ -63,14 +61,10 @@ fn main() -> AppExit {
         AssetsLoaderPlugin,
         SpacetimeDbPlugin,
         MaterialsPlugin,
-        PlayerPlugin,
+        LocalPlayerPlugin,
         ShipsPlugin,
         WorldPlugin,
     ))
-    .insert_resource(MovementSettings {
-        speed: 20.0,
-        ..default()
-    })
     .insert_resource(Gravity(Vec3::ZERO));
 
     #[cfg(feature = "dev")]

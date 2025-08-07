@@ -1,13 +1,13 @@
+use crate::tables::PlayerId;
 use spacetimedb::{table, Identity};
 use spacetimedsl::dsl;
 
-#[dsl(plural_name = players)]
-#[table(name = player, public)]
-pub struct Player {
+#[dsl(plural_name = player_locations)]
+#[table(name = player_location, public)]
+pub struct PlayerLocation {
     #[primary_key]
-    #[create_wrapper]
-    #[referenced_by(path = crate::tables, table = ship_pilot)]
-    id: Identity,
+    #[use_wrapper(path = PlayerId)]
+    player_id: Identity,
 
     pub x: f32,
     pub y: f32,

@@ -3,19 +3,25 @@ use bevy::{
     prelude::*,
     render::render_resource::{TextureViewDescriptor, TextureViewDimension},
 };
+use flycam::LocalPlayerFlycamPlugin;
+use lifecycle::LocalPlayerLifecyclePlugin;
 
 use crate::{
     GameState, assets_loader::TextureAssets, bindings::player_ready, spacetimedb::SpacetimeDB,
 };
 
+mod flycam;
+mod lifecycle;
+
 #[derive(Component)]
 pub struct PlayerCamera;
 
-pub struct PlayerPlugin;
+pub struct LocalPlayerPlugin;
 
-impl Plugin for PlayerPlugin {
+impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::InGame), (player_ready, spawn_player));
+        app.add_plugins((LocalPlayerLifecyclePlugin, LocalPlayerFlycamPlugin))
+            .add_systems(OnEnter(GameState::InGame), player_ready);
     }
 }
 
@@ -23,11 +29,10 @@ fn player_ready(stdb: SpacetimeDB) {
     stdb.reducers().player_ready().unwrap();
 }
 
-fn spawn_player(
-    mut commands: Commands,
-    mut images: ResMut<Assets<Image>>,
-    texture_assets: Res<TextureAssets>,
-) {
+fn get_player_camera(
+    texture_assets: &TextureAssets,
+    images: &mut Assets<Image>,
+) -> (PlayerCamera, Camera3d, Bloom, Skybox) {
     let skybox_handle = texture_assets.skybox_black.clone();
 
     let image = images.get_mut(&skybox_handle).unwrap();
@@ -41,10 +46,8 @@ fn spawn_player(
         });
     }
 
-    // For now, the player is just a camera. In the future he will be a 3D model that can move
-    commands.spawn((
+    (
         PlayerCamera,
-        Name::new("Player Camera"),
         Camera3d::default(),
         Bloom::NATURAL,
         Skybox {
@@ -52,5 +55,5 @@ fn spawn_player(
             brightness: 1000.0,
             ..Default::default()
         },
-    ));
+    )
 }

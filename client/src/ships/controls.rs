@@ -9,7 +9,7 @@ use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 use crate::{
     GameState,
     bindings::{ShipPilot, ShipTableAccess, ShipTypeTableAccess, player_move_ship},
-    player::PlayerCamera,
+    local_player::PlayerCamera,
     ships::components::ControlledShip,
     spacetimedb::SpacetimeDB,
 };

@@ -12,8 +12,11 @@ pub mod on_connected_reducer;
 pub mod on_disconnected_reducer;
 pub mod player_enter_ship_reducer;
 pub mod player_leave_ship_reducer;
+pub mod player_location_table;
+pub mod player_location_type;
 pub mod player_move_ship_reducer;
 pub mod player_ready_reducer;
+pub mod player_spawn_ship_reducer;
 pub mod player_table;
 pub mod player_type;
 pub mod ship_location_table;
@@ -42,10 +45,15 @@ pub use player_enter_ship_reducer::{
 pub use player_leave_ship_reducer::{
     player_leave_ship, set_flags_for_player_leave_ship, PlayerLeaveShipCallbackId,
 };
+pub use player_location_table::*;
+pub use player_location_type::PlayerLocation;
 pub use player_move_ship_reducer::{
     player_move_ship, set_flags_for_player_move_ship, PlayerMoveShipCallbackId,
 };
 pub use player_ready_reducer::{player_ready, set_flags_for_player_ready, PlayerReadyCallbackId};
+pub use player_spawn_ship_reducer::{
+    player_spawn_ship, set_flags_for_player_spawn_ship, PlayerSpawnShipCallbackId,
+};
 pub use player_table::*;
 pub use player_type::Player;
 pub use ship_location_table::*;
@@ -89,6 +97,15 @@ pub enum Reducer {
         rot_w: f32,
     },
     PlayerReady,
+    PlayerSpawnShip {
+        x: f32,
+        y: f32,
+        z: f32,
+        rot_x: f32,
+        rot_y: f32,
+        rot_z: f32,
+        rot_w: f32,
+    },
     WorldUpdateStationsRotation {
         update: StationRotationUpdate,
     },
@@ -107,6 +124,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::PlayerLeaveShip => "player_leave_ship",
             Reducer::PlayerMoveShip { .. } => "player_move_ship",
             Reducer::PlayerReady => "player_ready",
+            Reducer::PlayerSpawnShip { .. } => "player_spawn_ship",
             Reducer::WorldUpdateStationsRotation { .. } => "world_update_stations_rotation",
         }
     }
@@ -145,6 +163,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 )?
                 .into(),
             ),
+            "player_spawn_ship" => Ok(__sdk::parse_reducer_args::<
+                player_spawn_ship_reducer::PlayerSpawnShipArgs,
+            >("player_spawn_ship", &value.args)?
+            .into()),
             "world_update_stations_rotation" => {
                 Ok(__sdk::parse_reducer_args::<
                     world_update_stations_rotation_reducer::WorldUpdateStationsRotationArgs,
@@ -167,6 +189,7 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 pub struct DbUpdate {
     asteroid: __sdk::TableUpdate<Asteroid>,
     player: __sdk::TableUpdate<Player>,
+    player_location: __sdk::TableUpdate<PlayerLocation>,
     ship: __sdk::TableUpdate<Ship>,
     ship_location: __sdk::TableUpdate<ShipLocation>,
     ship_pilot: __sdk::TableUpdate<ShipPilot>,
@@ -187,6 +210,9 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
                 "player" => db_update
                     .player
                     .append(player_table::parse_table_update(table_update)?),
+                "player_location" => db_update
+                    .player_location
+                    .append(player_location_table::parse_table_update(table_update)?),
                 "ship" => db_update
                     .ship
                     .append(ship_table::parse_table_update(table_update)?),
@@ -237,6 +263,9 @@ impl __sdk::DbUpdate for DbUpdate {
         diff.player = cache
             .apply_diff_to_table::<Player>("player", &self.player)
             .with_updates_by_pk(|row| &row.id);
+        diff.player_location = cache
+            .apply_diff_to_table::<PlayerLocation>("player_location", &self.player_location)
+            .with_updates_by_pk(|row| &row.player_id);
         diff.ship = cache
             .apply_diff_to_table::<Ship>("ship", &self.ship)
             .with_updates_by_pk(|row| &row.id);
@@ -269,6 +298,7 @@ impl __sdk::DbUpdate for DbUpdate {
 pub struct AppliedDiff<'r> {
     asteroid: __sdk::TableAppliedDiff<'r, Asteroid>,
     player: __sdk::TableAppliedDiff<'r, Player>,
+    player_location: __sdk::TableAppliedDiff<'r, PlayerLocation>,
     ship: __sdk::TableAppliedDiff<'r, Ship>,
     ship_location: __sdk::TableAppliedDiff<'r, ShipLocation>,
     ship_pilot: __sdk::TableAppliedDiff<'r, ShipPilot>,
@@ -289,6 +319,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
     ) {
         callbacks.invoke_table_row_callbacks::<Asteroid>("asteroid", &self.asteroid, event);
         callbacks.invoke_table_row_callbacks::<Player>("player", &self.player, event);
+        callbacks.invoke_table_row_callbacks::<PlayerLocation>(
+            "player_location",
+            &self.player_location,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<Ship>("ship", &self.ship, event);
         callbacks.invoke_table_row_callbacks::<ShipLocation>(
             "ship_location",
@@ -880,6 +915,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
         asteroid_table::register_table(client_cache);
         player_table::register_table(client_cache);
+        player_location_table::register_table(client_cache);
         ship_table::register_table(client_cache);
         ship_location_table::register_table(client_cache);
         ship_pilot_table::register_table(client_cache);

@@ -12,7 +12,10 @@ mod world;
 fn on_connected(ctx: &ReducerContext) -> Result<(), String> {
     debug!("Player connected: {}", ctx.sender);
 
-    dsl(ctx).create_player(ctx.sender)?;
+    dsl(ctx).create_player(
+        ctx.sender, 0.0, 0.0, 0.0, // Initial position
+        0.0, 0.0, 0.0, 1.0, // Initial rotation (identity quaternion)
+    )?;
     Ok(())
 }
 
