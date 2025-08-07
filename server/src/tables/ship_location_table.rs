@@ -7,16 +7,17 @@ use spacetimedsl::{dsl, Wrapper};
 pub struct ShipLocation {
     #[primary_key]
     #[use_wrapper(path = ShipId)]
+    #[foreign_key(path = crate::tables, table = ship, column = id, on_delete = Delete)]
     ship_id: u64,
 
     pub x: f32,
-    y: f32,
-    z: f32,
+    pub y: f32,
+    pub z: f32,
 
-    rot_x: f32,
-    rot_y: f32,
-    rot_z: f32,
-    rot_w: f32,
+    pub rot_x: f32,
+    pub rot_y: f32,
+    pub rot_z: f32,
+    pub rot_w: f32,
 }
 
 impl ShipLocation {

@@ -1,6 +1,5 @@
 use std::{f32::consts::TAU, ops::Add};
 
-use log::debug;
 use spacetimedb::{reducer, table, ScheduleAt};
 use spacetimedsl::dsl;
 
@@ -28,7 +27,6 @@ pub fn world_update_stations_rotation(
     ctx: &spacetimedb::ReducerContext,
     update: StationRotationUpdate,
 ) {
-    debug!("Updating station rotations at {:?}", ctx.timestamp);
     let dsl = dsl(ctx);
 
     let update_interval = match update.scheduled_at {
