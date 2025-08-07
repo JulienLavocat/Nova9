@@ -7,7 +7,6 @@ use crate::tables::*;
 fn player_ready(ctx: &ReducerContext) -> Result<(), String> {
     let dsl = dsl(ctx);
 
-    // For now, we just spawn a ship for the player.
     let player = dsl.get_player_by_id(&PlayerId::new(ctx.sender))?;
     dsl.create_player_location(
         player.get_id(),
@@ -19,9 +18,6 @@ fn player_ready(ctx: &ReducerContext) -> Result<(), String> {
         *player.get_rot_z(),
         *player.get_rot_w(),
     )?;
-
-    let ship = dsl.create_ship(1, player.get_id())?;
-    dsl.create_ship_location(ship.get_id(), 0.0, 0.0, 800.0, 0.0, 0.0, 0.0, 1.0)?;
 
     Ok(())
 }
@@ -43,7 +39,6 @@ fn player_spawn_ship(
     let player_id = PlayerId::new(ctx.sender);
     let ship = dsl.create_ship(1, &player_id)?;
     dsl.create_ship_location(ship.get_id(), x, y, z, rot_x, rot_y, rot_z, rot_w)?;
-    dsl.create_ship_pilot(ship.get_id(), &player_id)?;
 
     Ok(())
 }
@@ -55,7 +50,7 @@ fn player_enter_ship(ctx: &ReducerContext, ship_id: u64) -> Result<(), String> {
     let player_id = PlayerId::new(ctx.sender);
     // TODO: Check if the player is in range of the ship
     let ship = dsl.get_ship_by_id(ShipId::new(ship_id))?;
-    dsl.delete_ship_pilot_by_player_id(&player_id)?;
+    dsl.delete_ship_pilot_by_player_id(&player_id).ok();
     dsl.create_ship_pilot(ship.get_id(), &player_id)?;
 
     dsl.delete_player_location_by_player_id(player_id)?;

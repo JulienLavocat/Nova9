@@ -7,6 +7,7 @@ use spacetimedsl::dsl;
 pub struct PlayerLocation {
     #[primary_key]
     #[use_wrapper(path = PlayerId)]
+    #[foreign_key(path = crate::tables, table = player, column = id, on_delete = Delete)]
     player_id: Identity,
 
     pub x: f32,

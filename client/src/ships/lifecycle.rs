@@ -67,6 +67,7 @@ fn spawn_ship(
             .spawn((
                 Name::new(format!("Ship {}", ship.id)),
                 Ship {
+                    id: ship.id,
                     ship_type: ship.ship_type_id,
                 },
                 Visibility::Visible,

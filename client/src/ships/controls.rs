@@ -132,8 +132,8 @@ fn on_ship_pilot_inserted(
                         Action::<LateralThrust>::new(),
                         Negate::all(),
                         Bindings::spawn(Bidirectional {
-                            positive: Binding::from(KeyCode::KeyE),
-                            negative: Binding::from(KeyCode::KeyQ),
+                            positive: Binding::from(KeyCode::KeyQ),
+                            negative: Binding::from(KeyCode::KeyE),
                         })
                     ),
                     (

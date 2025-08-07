@@ -10,6 +10,8 @@ mod lifecycle;
 mod location_updates;
 mod resources;
 
+pub use components::Ship;
+
 pub struct ShipsPlugin;
 
 impl Plugin for ShipsPlugin {

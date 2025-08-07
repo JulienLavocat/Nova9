@@ -5,6 +5,8 @@ use bevy::{
 };
 use flycam::LocalPlayerFlycamPlugin;
 use lifecycle::LocalPlayerLifecyclePlugin;
+use ui::LocalPlayerUiPlugin;
+use world_interactions::WorldInteractionPlugin;
 
 use crate::{
     GameState, assets_loader::TextureAssets, bindings::player_ready, spacetimedb::SpacetimeDB,
@@ -12,6 +14,15 @@ use crate::{
 
 mod flycam;
 mod lifecycle;
+mod ui;
+mod world_interactions;
+
+#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
+pub enum LocalPlayerState {
+    #[default]
+    OnFoot,
+    InShip,
+}
 
 #[derive(Component)]
 pub struct PlayerCamera;
@@ -20,7 +31,13 @@ pub struct LocalPlayerPlugin;
 
 impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins((LocalPlayerLifecyclePlugin, LocalPlayerFlycamPlugin))
+        app.init_state::<LocalPlayerState>()
+            .add_plugins((
+                LocalPlayerLifecyclePlugin,
+                LocalPlayerFlycamPlugin,
+                WorldInteractionPlugin,
+                LocalPlayerUiPlugin,
+            ))
             .add_systems(OnEnter(GameState::InGame), player_ready);
     }
 }

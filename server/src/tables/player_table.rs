@@ -7,6 +7,7 @@ pub struct Player {
     #[primary_key]
     #[create_wrapper]
     #[referenced_by(path = crate::tables, table = ship_pilot)]
+    #[referenced_by(path = crate::tables, table = player_location)]
     id: Identity,
 
     pub x: f32,

@@ -3,6 +3,8 @@ use bevy_enhanced_input::prelude::*;
 use log::debug;
 
 use crate::GameState;
+
+use super::LocalPlayerState;
 #[derive(InputAction)]
 #[action_output(Vec2)]
 struct Move;
@@ -33,7 +35,10 @@ impl Plugin for LocalPlayerFlycamPlugin {
                     .run_if(in_state(GameState::InGame))
                     .chain(),
             )
-            .add_systems(Update, apply_movement)
+            .add_systems(
+                Update,
+                apply_movement.run_if(in_state(LocalPlayerState::OnFoot)),
+            )
             .add_observer(rotate)
             .add_observer(capture_cursor);
     }
