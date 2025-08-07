@@ -67,11 +67,11 @@ fn player_leave_ship(ctx: &ReducerContext) -> Result<(), String> {
 
     dsl.delete_ship_pilot_by_player_id(player_id)?;
     // TODO: Properly find a safe position to spawn the player at
-    // Possibly get it from the client and validate it based on the distance to the ship?
+    // See: https://github.com/JulienLavocat/Nova9/issues/3
     dsl.create_player_location(
         player_id,
         *ship.get_x(),
-        *ship.get_y() + 10.0,
+        *ship.get_y(),
         *ship.get_z(),
         *ship.get_rot_x(),
         *ship.get_rot_y(),

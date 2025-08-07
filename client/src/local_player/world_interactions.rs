@@ -28,7 +28,7 @@ fn enter_ship_interaction(
 ) {
     for hit in ray_caster.iter() {
         if let Ok(ship) = ships.get(hit.entity)
-            && input.just_pressed(KeyCode::KeyE)
+            && input.just_pressed(KeyCode::KeyF)
         {
             debug!("Entering ship: {}", ship.id);
             stdb.reducers().player_enter_ship(ship.id).unwrap();

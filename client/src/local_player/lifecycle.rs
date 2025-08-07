@@ -1,11 +1,11 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
-use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent};
+use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 use log::debug;
 
 use crate::{
     assets_loader::TextureAssets,
-    bindings::{Player, PlayerLocation},
+    bindings::{Player, PlayerLocation, ShipPilotTableAccess},
     local_player::get_player_camera,
     spacetimedb::SpacetimeDB,
 };
@@ -63,6 +63,21 @@ fn on_player_location_inserted(
 ) {
     for event in events.read().filter(|e| e.row.player_id == stdb.identity()) {
         let player_location = &event.row;
+
+        if stdb
+            .db()
+            .ship_pilot()
+            .player_id()
+            .find(&stdb.identity())
+            .is_some()
+        {
+            warn!("Player is in a ship, requeing location insertion: {player_location:?}");
+            commands.send_event(InsertEvent {
+                row: player_location.clone(),
+            });
+            return;
+        }
+
         debug!("Inserting player location: {player_location:?}");
         commands.entity(player_entity.entity()).insert((
             PlayerFlyCam,

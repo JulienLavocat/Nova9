@@ -8,7 +8,9 @@ use bevy_spacetimedb::{InsertEvent, ReadDeleteEvent, ReadInsertEvent};
 
 use crate::{
     GameState,
-    bindings::{ShipPilot, ShipTableAccess, ShipTypeTableAccess, player_move_ship},
+    bindings::{
+        ShipPilot, ShipTableAccess, ShipTypeTableAccess, player_leave_ship, player_move_ship,
+    },
     local_player::PlayerCamera,
     ships::components::ControlledShip,
     spacetimedb::SpacetimeDB,
@@ -62,6 +64,10 @@ struct PitchYaw;
 #[action_output(bool)]
 struct ToggleCaptureCursor;
 
+#[derive(InputAction)]
+#[action_output(bool)]
+struct ExitShip;
+
 pub struct ShipControlsPlugin;
 
 impl Plugin for ShipControlsPlugin {
@@ -76,7 +82,8 @@ impl Plugin for ShipControlsPlugin {
             )
             .add_systems(Update, (apply_inputs, apply_movement).chain())
             .add_systems(PostUpdate, send_location_updates)
-            .add_observer(capture_cursor);
+            .add_observer(capture_cursor)
+            .add_observer(exit_ship);
     }
 }
 
@@ -159,6 +166,11 @@ fn on_ship_pilot_inserted(
                         Action::<ToggleCaptureCursor>::new(),
                         Hold::new(0.2),
                         bindings![KeyCode::Escape]
+                    ),
+                    (
+                        Action::<ExitShip>::new(),
+                        Hold::new(0.5),
+                        bindings![KeyCode::KeyF]
                     ),
                 ]),
             ));
@@ -328,6 +340,10 @@ fn capture_cursor(
         CursorGrabMode::None
     };
     window.cursor_options.visible = !grab;
+}
+
+fn exit_ship(_trigger: Trigger<Completed<ExitShip>>, stdb: SpacetimeDB) {
+    stdb.reducers().player_leave_ship().unwrap();
 }
 
 // fn debug_controls(

@@ -99,6 +99,7 @@ fn apply_movement(
     time: Res<Time>,
 ) {
     let mut transform = transform.into_inner();
+    debug!("Applying movement: {:?}", transform.translation);
     let rotation = transform.rotation;
 
     let mut movement = move_action.as_axis2d().extend(0.0).xzy();
