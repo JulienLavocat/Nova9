@@ -1,6 +1,5 @@
 use bevy::{prelude::*, window::CursorGrabMode};
 use bevy_enhanced_input::prelude::*;
-use bevy_inspector_egui::bevy_egui::{self, EguiContexts};
 use log::debug;
 
 use crate::GameState;
@@ -112,7 +111,6 @@ fn apply_movement(
     time: Res<Time>,
 ) {
     let mut transform = transform.into_inner();
-    debug!("Applying movement: {:?}", transform.translation);
     let rotation = transform.rotation;
 
     let mut movement = move_action.as_axis2d().extend(0.0).xzy();
