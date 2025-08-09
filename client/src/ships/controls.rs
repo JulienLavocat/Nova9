@@ -81,7 +81,7 @@ impl Plugin for ShipControlsPlugin {
                     .run_if(in_state(GameState::InGame)),
             )
             .add_systems(Update, (apply_inputs, apply_movement).chain())
-            .add_systems(PostUpdate, send_location_updates)
+            .add_systems(PostUpdate, (send_location_updates, debug_ship_pos))
             .add_observer(capture_cursor)
             .add_observer(exit_ship);
     }
@@ -198,6 +198,7 @@ fn on_ship_pilot_removed(
     mut events: ReadDeleteEvent<ShipPilot>,
     ships: Res<ShipsRegistry>,
     stdb: SpacetimeDB,
+    camera_transform: Single<Entity, With<PlayerCamera>>,
 ) {
     for event in events.read() {
         // We don't care about pilots that are not us
@@ -218,6 +219,10 @@ fn on_ship_pilot_removed(
                 .remove::<ShipLocationUpdate>()
                 .remove_with_requires::<OnPiloting>()
                 .despawn_related::<Actions<OnPiloting>>();
+
+            commands
+                .entity(camera_transform.entity())
+                .remove::<ChildOf>();
         } else {
             warn!("Ship[{}] not found for pilot removal", ship.ship_id);
         }
@@ -320,6 +325,7 @@ fn send_location_updates(
         return Ok(());
     }
 
+    debug!("Sending ship location update: pos={:?}", pos);
     stdb.reducers()
         .player_move_ship(pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w)?;
 
@@ -344,6 +350,15 @@ fn capture_cursor(
 
 fn exit_ship(_trigger: Trigger<Completed<ExitShip>>, stdb: SpacetimeDB) {
     stdb.reducers().player_leave_ship().unwrap();
+}
+
+fn debug_ship_pos(ships: Query<(&Ship, &Transform), Without<ControlledShip>>) {
+    // for (ship, transform) in ships.iter() {
+    //     debug!(
+    //         "Ship[{}] Position: ({:.2}, {:.2}, {:.2})",
+    //         ship.id, transform.translation.x, transform.translation.y, transform.translation.z,
+    //     );
+    // }
 }
 
 // fn debug_controls(

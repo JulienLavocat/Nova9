@@ -1,5 +1,6 @@
 use bevy::{prelude::*, window::CursorGrabMode};
 use bevy_enhanced_input::prelude::*;
+use bevy_inspector_egui::bevy_egui::{self, EguiContexts};
 use log::debug;
 
 use crate::GameState;
@@ -12,6 +13,10 @@ struct Move;
 #[derive(InputAction)]
 #[action_output(Vec2)]
 struct Rotate;
+
+#[derive(InputAction)]
+#[action_output(f32)]
+struct UpDown;
 
 #[derive(InputAction)]
 #[action_output(bool)]
@@ -67,6 +72,13 @@ fn on_flycam_added(
             bindings![(KeyCode::ShiftLeft)],
         ),
         (
+            Action::<UpDown>::new(),
+            Bindings::spawn(Bidirectional {
+                positive: Binding::from(KeyCode::Space),
+                negative: Binding::from(KeyCode::ControlLeft),
+            })
+        ),
+        (
             Action::<ToggleCaptureCursor>::new(),
             bindings![(KeyCode::Escape, Hold::new(0.1))]
         )
@@ -95,6 +107,7 @@ fn capture_cursor(
 fn apply_movement(
     move_action: Single<&ActionValue, With<Action<Move>>>,
     run_action: Single<&ActionValue, With<Action<Run>>>,
+    up_down_action: Single<&ActionValue, With<Action<UpDown>>>,
     transform: Single<&mut Transform, With<PlayerFlyCam>>,
     time: Res<Time>,
 ) {
@@ -105,6 +118,9 @@ fn apply_movement(
     let mut movement = move_action.as_axis2d().extend(0.0).xzy();
     movement.z = -movement.z;
 
+    let up_down = up_down_action.as_axis1d();
+    movement.y += up_down;
+
     let speed = if !run_action.as_bool() { 400.0 } else { 40.0 };
 
     transform.translation += rotation * movement * speed * time.delta_secs();
@@ -112,7 +128,7 @@ fn apply_movement(
 
 fn rotate(
     trigger: Trigger<Fired<Rotate>>,
-    mut players: Query<&mut Transform>,
+    mut players: Query<&mut Transform, With<PlayerFlyCam>>,
     window: Single<&Window>,
     time: Res<Time>,
 ) {
