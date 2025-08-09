@@ -33,7 +33,7 @@ fn subscribe_to_world(mut commands: Commands, stdb: SpacetimeDB) {
         ..default()
     });
 
-    stdb.subscribe()
+    stdb.subscription_builder()
         .on_applied(|_| debug!("Subscribed to world"))
         .on_error(|_, err| {
             panic!("Failed to subscribe to world: {err}");

@@ -3,16 +3,15 @@ use std::{env, sync::mpsc::Sender};
 use bevy::prelude::*;
 use bevy_spacetimedb::{
     AddEventChannelAppExtensions, ReadStdbConnectedEvent, ReadStdbConnectionErrorEvent,
-    ReadStdbDisconnectedEvent, StdbConnectedEvent, StdbConnection, StdbConnectionErrorEvent,
-    StdbDisconnectedEvent, StdbPlugin, tables,
+    ReadStdbDisconnectedEvent, StdbConnection, StdbPlugin,
 };
 
 use crate::{
     GameState,
     bindings::{
         AsteroidTableAccess, DbConnection, PlayerLocationTableAccess, PlayerTableAccess,
-        ShipLocationTableAccess, ShipPilotTableAccess, ShipTableAccess, ShipTypeTableAccess,
-        StationTableAccess,
+        RemoteTables, ShipLocationTableAccess, ShipPilotTableAccess, ShipTableAccess,
+        ShipTypeTableAccess, StationTableAccess,
     },
 };
 
@@ -28,56 +27,28 @@ pub struct SpacetimeDbPlugin;
 
 impl Plugin for SpacetimeDbPlugin {
     fn build(&self, app: &mut App) {
+        let uri = env::var("SPACETIMEDB_URI")
+            .unwrap_or_else(|_| "https://maincloud.spacetimedb.com".to_string());
+
+        #[cfg(not(feature = "dev"))]
+        let module_name =
+            env::var("SPACETIME_DB_MODULE").unwrap_or_else(|_| "nova9-staging".to_string());
+        #[cfg(feature = "dev")]
+        let module_name = "nova9";
+
         app.add_plugins(
             StdbPlugin::default()
-                .with_connection(|send_connected, send_disconnected, send_error, _| {
-                    let uri = env::var("SPACETIMEDB_URI")
-                        .unwrap_or_else(|_| "https://maincloud.spacetimedb.com".to_string());
-
-                    #[cfg(not(feature = "dev"))]
-                    let module_name = env::var("SPACETIME_DB_MODULE")
-                        .unwrap_or_else(|_| "nova9-staging".to_string());
-                    #[cfg(feature = "dev")]
-                    let module_name = "nova9";
-
-                    let conn = DbConnection::builder()
-                        .with_uri(uri)
-                        .with_module_name(module_name)
-                        .with_light_mode(true)
-                        .on_connect(move |_, _, _| {
-                            send_connected.send(StdbConnectedEvent {}).unwrap();
-                        })
-                        .on_disconnect(move |_, err| {
-                            send_disconnected
-                                .send(StdbDisconnectedEvent { err })
-                                .unwrap();
-                        })
-                        .on_connect_error(move |_, err| {
-                            send_error.send(StdbConnectionErrorEvent { err }).unwrap();
-                        })
-                        .build()
-                        .unwrap();
-
-                    conn.run_threaded();
-
-                    conn
-                })
-                .with_events(|plugin, app, db, _| {
-                    tables!(
-                        asteroid,
-                        player,
-                        player_location,
-                        ship,
-                        ship_location
-                        ship_pilot,
-                        ship_type,
-                        station,
-                    );
-
-                    let (send, recv) = std::sync::mpsc::channel();
-                    app.insert_resource(StaticDataLoadedSender(send));
-                    app.add_event_channel::<StaticDataLoadedEvent>(recv);
-                }),
+                .with_uri(uri)
+                .with_module_name(module_name)
+                .with_run_fn(DbConnection::run_threaded)
+                .add_table(RemoteTables::asteroid)
+                .add_table(RemoteTables::player)
+                .add_table(RemoteTables::player_location)
+                .add_table(RemoteTables::ship)
+                .add_table(RemoteTables::ship_location)
+                .add_table(RemoteTables::ship_pilot)
+                .add_table(RemoteTables::ship_type)
+                .add_table(RemoteTables::station),
         )
         .add_systems(OnEnter(GameState::StaticDataLoading), load_static_data)
         .add_systems(
@@ -91,6 +62,10 @@ impl Plugin for SpacetimeDbPlugin {
                 on_static_data_loaded.run_if(in_state(GameState::StaticDataLoading)),
             ),
         );
+
+        let (send, recv) = std::sync::mpsc::channel();
+        app.insert_resource(StaticDataLoadedSender(send));
+        app.add_event_channel::<StaticDataLoadedEvent>(recv);
     }
 }
 
@@ -124,7 +99,7 @@ fn ensure_connected(stdb: SpacetimeDB, mut next_state: ResMut<NextState<GameStat
 fn load_static_data(stdb: SpacetimeDB, sender: Res<StaticDataLoadedSender>) {
     let sender = sender.0.clone();
     info!("Loading static data...");
-    stdb.subscribe()
+    stdb.subscription_builder()
         .on_applied(move |_| {
             sender.send(StaticDataLoadedEvent {}).unwrap();
         })
